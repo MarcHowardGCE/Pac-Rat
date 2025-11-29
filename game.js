@@ -15,12 +15,14 @@ class PacRatGame {
         this.tileSize = 20;
         this.gridWidth = 28;
         this.gridHeight = 31;
+        this.TUNNEL_ROW = 14; // Row where tunnel wrapping occurs (zero-based index, corresponds to maze[14])
         
         // Set canvas size
         this.canvas.width = this.gridWidth * this.tileSize;
         this.canvas.height = this.gridHeight * this.tileSize;
         
-        // Maze layout (0 = path, 1 = wall, 2 = dot, 3 = prairie dog power-up, 4 = candy)
+        // Maze layout (0 = path, 1 = wall, 2 = dot, 3 = prairie dog power-up)
+        // Note: Candy items are dynamically spawned via spawnCandy() method
         this.maze = [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             [1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1],
@@ -382,12 +384,12 @@ class PacRatGame {
     }
     
     canMove(x, y) {
-        if (y < 0 || y >= this.gridHeight || (x < 0 && y !== 14) || (x >= this.gridWidth && y !== 14)) {
+        if (y < 0 || y >= this.gridHeight || (x < 0 && y !== this.TUNNEL_ROW) || (x >= this.gridWidth && y !== this.TUNNEL_ROW)) {
             return false;
         }
         
         // Allow tunnel movement
-        if (y === 14 && (x < 0 || x >= this.gridWidth)) {
+        if (y === this.TUNNEL_ROW && (x < 0 || x >= this.gridWidth)) {
             return true;
         }
         
