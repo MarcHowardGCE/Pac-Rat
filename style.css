@@ -32,7 +32,7 @@ body {
 }
 
 #game-logo {
-    width: 250px;
+    width: 350px;
     height: auto;
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
 }
@@ -226,7 +226,7 @@ button:active {
     }
     
     #game-logo {
-        width: 200px;
+        width: 280px;
     }
 }
 
