@@ -112,8 +112,10 @@ class PacRatGame {
         document.getElementById('high-score').textContent = this.highScore;
         
         // Audio system
-        this.soundEnabled = localStorage.getItem('pacRatSound') !== 'false';
+        const savedSound = localStorage.getItem('pacRatSound');
+        this.soundEnabled = savedSound === null ? true : savedSound === 'true';
         this.audioContext = null;
+        this.musicLoopTimeout = null;
         this.setupAudio();
         
         // Start animation loop
@@ -215,7 +217,7 @@ class PacRatGame {
             this.soundButton.textContent = this.soundEnabled ? '🔊' : '🔇';
             this.soundButton.addEventListener('click', () => {
                 this.soundEnabled = !this.soundEnabled;
-                localStorage.setItem('pacRatSound', this.soundEnabled);
+                localStorage.setItem('pacRatSound', String(this.soundEnabled));
                 this.soundButton.textContent = this.soundEnabled ? '🔊' : '🔇';
                 
                 if (!this.soundEnabled && this.backgroundMusic) {
@@ -327,6 +329,10 @@ class PacRatGame {
     playMusicLoop() {
         if (!this.soundEnabled || !this.backgroundMusic || this.state !== 'playing') {
             this.backgroundMusic = false;
+            if (this.musicLoopTimeout) {
+                clearTimeout(this.musicLoopTimeout);
+                this.musicLoopTimeout = null;
+            }
             return;
         }
         
@@ -351,12 +357,16 @@ class PacRatGame {
             time += note.dur;
         });
         
-        // Schedule next loop
-        setTimeout(() => this.playMusicLoop(), time * 1000 + 500);
+        // Schedule next loop and store timeout reference
+        this.musicLoopTimeout = setTimeout(() => this.playMusicLoop(), time * 1000 + 500);
     }
     
     stopBackgroundMusic() {
         this.backgroundMusic = false;
+        if (this.musicLoopTimeout) {
+            clearTimeout(this.musicLoopTimeout);
+            this.musicLoopTimeout = null;
+        }
     }
     
     gameLoop(timestamp = 0) {
@@ -432,8 +442,7 @@ class PacRatGame {
                 this.player.x = gridX;
                 this.player.y = gridY;
             }
-            // Reset nextDirection after attempting change
-            this.player.nextDirection = { ...this.player.direction };
+            // Don't reset nextDirection - keep the queued input for next intersection
         }
         
         // Move in current direction
