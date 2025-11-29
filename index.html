@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pac-Rat - A Pac-Man clone with ferrets, rats, and prairie dogs set in the Arizona desert">
+    <title>Pac-Rat - Desert Adventure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="start-screen" class="screen">
+            <h1>PAC-RAT</h1>
+            <p class="subtitle">Desert Adventure</p>
+            <div class="instructions">
+                <p>Control the ferret and collect all the dots!</p>
+                <p>🐕 Eat prairie dogs to power up and catch the rats</p>
+                <p>🍬 Collect candy for bonus points</p>
+                <p><strong>Use Arrow Keys or WASD to move</strong></p>
+            </div>
+            <button id="start-button">START GAME</button>
+            <div class="score-display">
+                <p>High Score: <span id="high-score">0</span></p>
+            </div>
+        </div>
+        <div id="game-over-screen" class="screen hidden">
+            <h1>GAME OVER</h1>
+            <div class="final-score">
+                <p>Your Score: <span id="final-score">0</span></p>
+                <p>High Score: <span id="game-over-high-score">0</span></p>
+            </div>
+            <button id="restart-button">PLAY AGAIN</button>
+        </div>
+        <div id="hud" class="hidden">
+            <div class="hud-item">
+                <span class="label">Score:</span>
+                <span id="score">0</span>
+            </div>
+            <div class="hud-item">
+                <span class="label">Lives:</span>
+                <span id="lives">❤️❤️❤️</span>
+            </div>
+            <div class="hud-item">
+                <span class="label">Level:</span>
+                <span id="level">1</span>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
