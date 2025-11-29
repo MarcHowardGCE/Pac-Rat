@@ -157,9 +157,7 @@ class PacRatGame {
         this.resetLevel();
         
         // Initialize audio context if not already done
-        if (!this.audioContext) {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        this.initializeAudioContext();
         
         this.playBackgroundMusic();
     }
@@ -210,13 +208,13 @@ class PacRatGame {
         document.getElementById('lives').textContent = livesDisplay || '💀';
     }
     
+    initializeAudioContext() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+    
     setupAudio() {
-        // Create audio context on first user interaction
-        const initAudio = () => {
-            if (!this.audioContext) {
-                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        };
         
         // Sound toggle button
         if (this.soundButton) {
@@ -235,8 +233,8 @@ class PacRatGame {
         }
         
         // Initialize audio on user interaction
-        document.addEventListener('click', initAudio, { once: true });
-        document.addEventListener('keydown', initAudio, { once: true });
+        document.addEventListener('click', () => this.initializeAudioContext(), { once: true });
+        document.addEventListener('keydown', () => this.initializeAudioContext(), { once: true });
     }
     
     playSound(frequency, duration, type = 'sine', volume = 0.3) {
