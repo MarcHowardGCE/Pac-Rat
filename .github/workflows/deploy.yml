@@ -34,6 +34,6 @@ jobs:
           server: ${{ secrets.BLUEHOST_FTP_SERVER }}
           username: ${{ secrets.BLUEHOST_FTP_USERNAME }}
           password: ${{ secrets.BLUEHOST_FTP_PASSWORD }}
-          protocol: ftp                       # or ftps if supported
+          protocol: ftp                       # Note: Consider using ftps for secure transmission if supported by Bluehost
           local-dir: dist/                    # 👈 add the trailing slash
           server-dir: /pac-rat/  # 👈 deploy to subfolder

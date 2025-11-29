@@ -20,7 +20,7 @@ filesToCopy.forEach(file => {
     fs.copyFileSync(srcPath, destPath);
     console.log(`✓ Copied ${file} to dist/`);
   } else {
-    console.error(`✗ Error: ${file} not found`);
+    console.error(`✗ Error: ${file} not found in project root`);
     hasErrors = true;
   }
 });
