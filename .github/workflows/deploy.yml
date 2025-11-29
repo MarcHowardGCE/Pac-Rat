@@ -1,0 +1,41 @@
+name: Build and Deploy to Bluehost
+
+on:
+  push:
+    branches:
+      - main   # or your default branch
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build site
+        run: npm run build
+
+      - name: Verify build output
+        run: ls -R dist
+
+      - name: Deploy to Bluehost via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.BLUEHOST_FTP_SERVER }}
+          username: ${{ secrets.BLUEHOST_FTP_USERNAME }}
+          password: ${{ secrets.BLUEHOST_FTP_PASSWORD }}
+          protocol: ftp                       # Note: Consider using ftps for secure transmission if supported by Bluehost
+          local-dir: dist/                    # 👈 add the trailing slash
+          server-dir: /pac-rat/  # 👈 deploy to subfolder
