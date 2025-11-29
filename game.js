@@ -155,6 +155,12 @@ class PacRatGame {
         this.lives = 3;
         this.level = 1;
         this.resetLevel();
+        
+        // Initialize audio context if not already done
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        
         this.playBackgroundMusic();
     }
     
@@ -336,29 +342,60 @@ class PacRatGame {
             return;
         }
         
-        // Simple repeating melody
+        // Dynamic Arizona ferret-themed adventure melody
+        // Upbeat, playful tune that captures the desert adventure spirit
         const melody = [
-            { freq: 523, dur: 0.2 }, // C
-            { freq: 587, dur: 0.2 }, // D
-            { freq: 659, dur: 0.2 }, // E
-            { freq: 784, dur: 0.2 }, // G
-            { freq: 659, dur: 0.2 }, // E
-            { freq: 587, dur: 0.2 }, // D
-            { freq: 523, dur: 0.4 }, // C
+            // Main phrase - energetic and bouncy (like a ferret hopping)
+            { freq: 659, dur: 0.15 }, // E (playful start)
+            { freq: 784, dur: 0.15 }, // G
+            { freq: 880, dur: 0.2 },  // A (higher, more excitement)
+            { freq: 784, dur: 0.1 },  // G
+            { freq: 659, dur: 0.15 }, // E
+            { freq: 523, dur: 0.25 }, // C (return to base)
+            
+            // Variation 1 - desert wandering feel
+            { freq: 587, dur: 0.2 },  // D
+            { freq: 659, dur: 0.2 },  // E
+            { freq: 784, dur: 0.3 },  // G (sustained)
+            { freq: 659, dur: 0.15 }, // E
+            { freq: 587, dur: 0.15 }, // D
+            
+            // Climax - ferret adventure peak
+            { freq: 1047, dur: 0.2 }, // C (high)
+            { freq: 988, dur: 0.15 }, // B
+            { freq: 880, dur: 0.15 }, // A
+            { freq: 784, dur: 0.2 },  // G
+            { freq: 659, dur: 0.25 }, // E
+            
+            // Bridge - mysterious desert moment
+            { freq: 698, dur: 0.2 },  // F
+            { freq: 784, dur: 0.2 },  // G
+            { freq: 880, dur: 0.15 }, // A
+            { freq: 784, dur: 0.15 }, // G
+            { freq: 659, dur: 0.3 },  // E (sustained)
+            
+            // Final phrase - triumphant return
+            { freq: 523, dur: 0.15 }, // C
+            { freq: 659, dur: 0.15 }, // E
+            { freq: 784, dur: 0.15 }, // G
+            { freq: 880, dur: 0.2 },  // A
+            { freq: 1047, dur: 0.3 }, // C (high, triumphant end)
         ];
         
         let time = 0;
         melody.forEach(note => {
             setTimeout(() => {
                 if (this.backgroundMusic && this.soundEnabled) {
-                    this.playSound(note.freq, note.dur, 'square', 0.05);
+                    // Vary the waveform for more interest
+                    const waveform = note.freq > 800 ? 'triangle' : 'square';
+                    this.playSound(note.freq, note.dur, waveform, 0.06);
                 }
             }, time * 1000);
             time += note.dur;
         });
         
-        // Schedule next loop and store timeout reference
-        this.musicLoopTimeout = setTimeout(() => this.playMusicLoop(), time * 1000 + 500);
+        // Schedule next loop with shorter pause for continuity
+        this.musicLoopTimeout = setTimeout(() => this.playMusicLoop(), time * 1000 + 300);
     }
     
     stopBackgroundMusic() {
