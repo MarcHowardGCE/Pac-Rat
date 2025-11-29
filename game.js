@@ -451,10 +451,7 @@ class PacRatGame {
         // Animate mouth
         this.player.mouthAngle = Math.abs(Math.sin(this.animationFrame / 100) * 0.4);
         
-        // Collect items
-        const gridX = Math.round(this.player.x);
-        const gridY = Math.round(this.player.y);
-        
+        // Collect items (reuse gridX and gridY from above)
         if (this.maze[gridY] && this.maze[gridY][gridX] === 2) {
             this.maze[gridY][gridX] = 0;
             this.score += 10;
