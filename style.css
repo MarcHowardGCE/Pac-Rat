@@ -23,6 +23,20 @@ body {
     max-height: 95vh;
 }
 
+#logo-container {
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(61, 33, 13, 0.8);
+    border-radius: 10px;
+    border: 2px solid #d4a574;
+}
+
+#game-logo {
+    width: 250px;
+    height: auto;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
 #gameCanvas {
     border: 4px solid #5d4037;
     border-radius: 10px;
@@ -166,6 +180,11 @@ button:active {
     transform: scale(1.1);
 }
 
+/* Mobile hint only shown on mobile */
+.mobile-hint {
+    display: none;
+}
+
 /* Mobile responsive adjustments */
 @media (max-width: 768px) {
     .screen h1 {
@@ -179,6 +198,12 @@ button:active {
     
     .instructions p {
         font-size: 0.9em;
+    }
+    
+    .mobile-hint {
+        display: block;
+        color: #ffeb3b;
+        font-size: 1.1em !important;
     }
     
     button {
@@ -198,6 +223,10 @@ button:active {
     .screen {
         padding: 20px;
         width: 90%;
+    }
+    
+    #game-logo {
+        width: 200px;
     }
 }
 
