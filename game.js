@@ -17,6 +17,12 @@ class PacRatGame {
         this.gridHeight = 31;
         this.TUNNEL_ROW = 14; // Row where tunnel wrapping occurs (zero-based index, corresponds to maze[14])
         
+        // Rat base boundaries (for candy spawn exclusion)
+        this.RAT_BASE_MIN_X = 10;
+        this.RAT_BASE_MAX_X = 17;
+        this.RAT_BASE_MIN_Y = 11;
+        this.RAT_BASE_MAX_Y = 18;
+        
         // Set canvas size
         this.canvas.width = this.gridWidth * this.tileSize;
         this.canvas.height = this.gridHeight * this.tileSize;
@@ -73,10 +79,10 @@ class PacRatGame {
         
         // Rats (Enemies)
         this.rats = [
-            { x: 12, y: 14, color: '#FF0000', startX: 12, startY: 14, direction: { x: 1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 1 } },
-            { x: 14, y: 14, color: '#FFB8FF', startX: 14, startY: 14, direction: { x: 0, y: -1 }, mode: 'chase', scatterTarget: { x: 2, y: 1 } },
-            { x: 13, y: 14, color: '#00FFFF', startX: 13, startY: 14, direction: { x: -1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 29 } },
-            { x: 15, y: 14, color: '#FFB852', startX: 15, startY: 14, direction: { x: 0, y: 1 }, mode: 'chase', scatterTarget: { x: 2, y: 29 } }
+            { x: 12, y: 14, color: '#FF0000', startX: 12, startY: 14, direction: { x: 1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 1 }, exitTimer: 0, exitDelay: 0 },
+            { x: 14, y: 14, color: '#FFB8FF', startX: 14, startY: 14, direction: { x: 0, y: -1 }, mode: 'chase', scatterTarget: { x: 2, y: 1 }, exitTimer: 0, exitDelay: 500 },
+            { x: 13, y: 14, color: '#00FFFF', startX: 13, startY: 14, direction: { x: -1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 29 }, exitTimer: 0, exitDelay: 1000 },
+            { x: 15, y: 14, color: '#FFB852', startX: 15, startY: 14, direction: { x: 0, y: 1 }, mode: 'chase', scatterTarget: { x: 2, y: 29 }, exitTimer: 0, exitDelay: 1500 }
         ];
         
         // Candy bonus items
@@ -97,12 +103,20 @@ class PacRatGame {
         this.hud = document.getElementById('hud');
         this.startButton = document.getElementById('start-button');
         this.restartButton = document.getElementById('restart-button');
+        this.soundButton = document.getElementById('sound-button');
         
         this.startButton.addEventListener('click', () => this.startGame());
         this.restartButton.addEventListener('click', () => this.restartGame());
         
         // Update high score display
         document.getElementById('high-score').textContent = this.highScore;
+        
+        // Audio system
+        const savedSound = localStorage.getItem('pacRatSound');
+        this.soundEnabled = savedSound === null ? true : savedSound === 'true';
+        this.audioContext = null;
+        this.musicLoopTimeout = null;
+        this.setupAudio();
         
         // Start animation loop
         this.gameLoop();
@@ -141,6 +155,7 @@ class PacRatGame {
         this.lives = 3;
         this.level = 1;
         this.resetLevel();
+        this.playBackgroundMusic();
     }
     
     restartGame() {
@@ -165,6 +180,7 @@ class PacRatGame {
             rat.x = rat.startX;
             rat.y = rat.startY;
             rat.mode = 'chase';
+            rat.exitTimer = 0; // Reset exit timer
             if (index === 0) rat.direction = { x: 1, y: 0 };
             else if (index === 1) rat.direction = { x: 0, y: -1 };
             else if (index === 2) rat.direction = { x: -1, y: 0 };
@@ -188,6 +204,171 @@ class PacRatGame {
         document.getElementById('lives').textContent = livesDisplay || '💀';
     }
     
+    setupAudio() {
+        // Create audio context on first user interaction
+        const initAudio = () => {
+            if (!this.audioContext) {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        };
+        
+        // Sound toggle button
+        if (this.soundButton) {
+            this.soundButton.textContent = this.soundEnabled ? '🔊' : '🔇';
+            this.soundButton.addEventListener('click', () => {
+                this.soundEnabled = !this.soundEnabled;
+                localStorage.setItem('pacRatSound', String(this.soundEnabled));
+                this.soundButton.textContent = this.soundEnabled ? '🔊' : '🔇';
+                
+                if (!this.soundEnabled && this.backgroundMusic) {
+                    this.stopBackgroundMusic();
+                } else if (this.soundEnabled && this.state === 'playing' && !this.backgroundMusic) {
+                    this.playBackgroundMusic();
+                }
+            });
+        }
+        
+        // Initialize audio on user interaction
+        document.addEventListener('click', initAudio, { once: true });
+        document.addEventListener('keydown', initAudio, { once: true });
+    }
+    
+    playSound(frequency, duration, type = 'sine', volume = 0.3) {
+        if (!this.soundEnabled || !this.audioContext) return;
+        
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+        gainNode.gain.value = volume;
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration);
+    }
+    
+    playDotSound() {
+        this.playSound(800, 0.05, 'square', 0.1);
+    }
+    
+    playPowerUpSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(800, this.audioContext.currentTime + 0.2);
+        
+        gainNode.gain.value = 0.3;
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.2);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.2);
+    }
+    
+    playEatRatSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.3);
+        
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.3);
+    }
+    
+    playDeathSound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.setValueAtTime(400, this.audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(50, this.audioContext.currentTime + 0.5);
+        
+        gainNode.gain.value = 0.4;
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.5);
+        
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + 0.5);
+    }
+    
+    playCandySound() {
+        if (!this.soundEnabled || !this.audioContext) return;
+        // Play a happy jingle
+        const notes = [523, 659, 784, 1047]; // C E G C
+        notes.forEach((freq, i) => {
+            setTimeout(() => this.playSound(freq, 0.1, 'sine', 0.2), i * 50);
+        });
+    }
+    
+    playBackgroundMusic() {
+        if (!this.soundEnabled || !this.audioContext) return;
+        
+        this.backgroundMusic = true;
+        this.playMusicLoop();
+    }
+    
+    playMusicLoop() {
+        if (!this.soundEnabled || !this.backgroundMusic || this.state !== 'playing') {
+            this.backgroundMusic = false;
+            if (this.musicLoopTimeout) {
+                clearTimeout(this.musicLoopTimeout);
+                this.musicLoopTimeout = null;
+            }
+            return;
+        }
+        
+        // Simple repeating melody
+        const melody = [
+            { freq: 523, dur: 0.2 }, // C
+            { freq: 587, dur: 0.2 }, // D
+            { freq: 659, dur: 0.2 }, // E
+            { freq: 784, dur: 0.2 }, // G
+            { freq: 659, dur: 0.2 }, // E
+            { freq: 587, dur: 0.2 }, // D
+            { freq: 523, dur: 0.4 }, // C
+        ];
+        
+        let time = 0;
+        melody.forEach(note => {
+            setTimeout(() => {
+                if (this.backgroundMusic && this.soundEnabled) {
+                    this.playSound(note.freq, note.dur, 'square', 0.05);
+                }
+            }, time * 1000);
+            time += note.dur;
+        });
+        
+        // Schedule next loop and store timeout reference
+        this.musicLoopTimeout = setTimeout(() => this.playMusicLoop(), time * 1000 + 500);
+    }
+    
+    stopBackgroundMusic() {
+        this.backgroundMusic = false;
+        if (this.musicLoopTimeout) {
+            clearTimeout(this.musicLoopTimeout);
+            this.musicLoopTimeout = null;
+        }
+    }
+    
     gameLoop(timestamp = 0) {
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
@@ -208,7 +389,7 @@ class PacRatGame {
         this.updatePlayer();
         
         // Update rats
-        this.rats.forEach(rat => this.updateRat(rat));
+        this.rats.forEach(rat => this.updateRat(rat, deltaTime));
         
         // Check collisions
         this.checkCollisions();
@@ -242,12 +423,26 @@ class PacRatGame {
     }
     
     updatePlayer() {
-        // Try to change direction
-        const nextX = Math.round(this.player.x + this.player.nextDirection.x * this.player.speed);
-        const nextY = Math.round(this.player.y + this.player.nextDirection.y * this.player.speed);
+        // Check if player is aligned with grid (centered in lane)
+        const gridX = Math.round(this.player.x);
+        const gridY = Math.round(this.player.y);
+        const alignedX = Math.abs(this.player.x - gridX) < 0.1;
+        const alignedY = Math.abs(this.player.y - gridY) < 0.1;
+        const isAligned = alignedX && alignedY;
         
-        if (this.canMove(nextX, nextY)) {
-            this.player.direction = { ...this.player.nextDirection };
+        // Try to change direction only when aligned with grid
+        if (isAligned && (this.player.nextDirection.x !== 0 || this.player.nextDirection.y !== 0)) {
+            // Check if the requested direction is valid
+            const nextX = gridX + this.player.nextDirection.x;
+            const nextY = gridY + this.player.nextDirection.y;
+            
+            if (this.canMove(nextX, nextY)) {
+                this.player.direction = { ...this.player.nextDirection };
+                // Snap to grid when changing direction
+                this.player.x = gridX;
+                this.player.y = gridY;
+            }
+            // Don't reset nextDirection - keep the queued input for next intersection
         }
         
         // Move in current direction
@@ -261,24 +456,28 @@ class PacRatGame {
             // Handle tunnel wrapping
             if (this.player.x < 0) this.player.x = this.gridWidth - 1;
             if (this.player.x >= this.gridWidth) this.player.x = 0;
+        } else {
+            // Can't move forward, snap to grid
+            this.player.x = gridX;
+            this.player.y = gridY;
+            this.player.direction = { x: 0, y: 0 };
         }
         
         // Animate mouth
         this.player.mouthAngle = Math.abs(Math.sin(this.animationFrame / 100) * 0.4);
         
-        // Collect items
-        const gridX = Math.round(this.player.x);
-        const gridY = Math.round(this.player.y);
-        
+        // Collect items (reuse gridX and gridY from above)
         if (this.maze[gridY] && this.maze[gridY][gridX] === 2) {
             this.maze[gridY][gridX] = 0;
             this.score += 10;
+            this.playDotSound();
             this.updateUI();
         } else if (this.maze[gridY] && this.maze[gridY][gridX] === 3) {
             this.maze[gridY][gridX] = 0;
             this.score += 50;
             this.player.powered = true;
             this.player.powerTimer = 8000; // 8 seconds
+            this.playPowerUpSound();
             this.updateUI();
         }
         
@@ -288,12 +487,19 @@ class PacRatGame {
             if (distance < 1) {
                 this.score += 100;
                 this.candies.splice(index, 1);
+                this.playCandySound();
                 this.updateUI();
             }
         });
     }
     
-    updateRat(rat) {
+    updateRat(rat, deltaTime) {
+        // Check if rat should be in base (during exit delay)
+        if (rat.exitTimer < rat.exitDelay) {
+            rat.exitTimer += deltaTime;
+            return; // Don't move while in base
+        }
+        
         // Simple AI: Random direction changes at intersections
         const gridX = Math.round(rat.x);
         const gridY = Math.round(rat.y);
@@ -414,10 +620,13 @@ class PacRatGame {
                     this.score += 200;
                     rat.x = rat.startX;
                     rat.y = rat.startY;
+                    rat.exitTimer = 0; // Reset exit timer
+                    this.playEatRatSound();
                     this.updateUI();
                 } else {
                     // Lose a life
                     this.lives--;
+                    this.playDeathSound();
                     this.updateUI();
                     
                     if (this.lives <= 0) {
@@ -432,6 +641,7 @@ class PacRatGame {
                         this.rats.forEach((r, index) => {
                             r.x = r.startX;
                             r.y = r.startY;
+                            r.exitTimer = 0; // Reset exit timer
                         });
                     }
                 }
@@ -440,11 +650,14 @@ class PacRatGame {
     }
     
     spawnCandy() {
-        // Find empty spots to spawn candy
+        // Find empty spots to spawn candy, excluding rat base area (center of maze)
         const emptySpots = [];
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
-                if (this.maze[y][x] === 0) {
+                // Exclude rat base area
+                const inRatBase = (x >= this.RAT_BASE_MIN_X && x <= this.RAT_BASE_MAX_X && 
+                                   y >= this.RAT_BASE_MIN_Y && y <= this.RAT_BASE_MAX_Y);
+                if (this.maze[y][x] === 0 && !inRatBase) {
                     emptySpots.push({ x, y });
                 }
             }
@@ -476,6 +689,7 @@ class PacRatGame {
         this.state = 'gameOver';
         this.hud.classList.add('hidden');
         this.gameOverScreen.classList.remove('hidden');
+        this.stopBackgroundMusic();
         
         document.getElementById('final-score').textContent = this.score;
         
@@ -536,7 +750,6 @@ class PacRatGame {
     drawPlayer() {
         const px = this.player.x * this.tileSize + this.tileSize / 2;
         const py = this.player.y * this.tileSize + this.tileSize / 2;
-        const radius = this.tileSize / 2 - 2;
         
         // Determine rotation based on direction
         let rotation = 0;
@@ -549,24 +762,66 @@ class PacRatGame {
         this.ctx.translate(px, py);
         this.ctx.rotate(rotation);
         
-        // Draw ferret body
-        this.ctx.fillStyle = this.player.powered ? '#ffeb3b' : '#d4a574';
+        // Ferret colors - light tan/beige with dark mask
+        const bodyColor = this.player.powered ? '#ffeb3b' : '#e8dcc8';
+        const maskColor = this.player.powered ? '#ffeb3b' : '#8b7355';
+        
+        // Draw elongated body (ferrets have long bodies)
+        this.ctx.fillStyle = bodyColor;
         this.ctx.beginPath();
-        this.ctx.arc(0, 0, radius, this.player.mouthAngle, Math.PI * 2 - this.player.mouthAngle);
-        this.ctx.lineTo(0, 0);
+        this.ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Draw eye
+        // Draw head (smaller, rounder)
+        this.ctx.fillStyle = bodyColor;
+        this.ctx.beginPath();
+        this.ctx.arc(7, 0, 5, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw ferret mask (dark area around eyes)
+        this.ctx.fillStyle = maskColor;
+        this.ctx.beginPath();
+        this.ctx.ellipse(7, 0, 4, 3, 0, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw pointy nose
+        this.ctx.fillStyle = '#2d1b0e';
+        this.ctx.beginPath();
+        this.ctx.moveTo(11, 0);
+        this.ctx.lineTo(10, -1.5);
+        this.ctx.lineTo(10, 1.5);
+        this.ctx.closePath();
+        this.ctx.fill();
+        
+        // Draw small round ears
+        this.ctx.fillStyle = bodyColor;
+        this.ctx.beginPath();
+        this.ctx.arc(5, -4, 2, 0, Math.PI * 2);
+        this.ctx.arc(5, 4, 2, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw cute beady eyes
         this.ctx.fillStyle = '#000';
         this.ctx.beginPath();
-        this.ctx.arc(radius / 3, -radius / 3, 2, 0, Math.PI * 2);
+        this.ctx.arc(8, -1.5, 1.5, 0, Math.PI * 2);
+        this.ctx.arc(8, 1.5, 1.5, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Draw nose
-        this.ctx.fillStyle = '#5d4037';
+        // Draw eye shine for cuteness
+        this.ctx.fillStyle = '#fff';
         this.ctx.beginPath();
-        this.ctx.arc(radius - 2, 0, 2, 0, Math.PI * 2);
+        this.ctx.arc(8.5, -1.2, 0.5, 0, Math.PI * 2);
+        this.ctx.arc(8.5, 1.8, 0.5, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // Draw small tail
+        this.ctx.strokeStyle = bodyColor;
+        this.ctx.lineWidth = 3;
+        this.ctx.lineCap = 'round';
+        this.ctx.beginPath();
+        this.ctx.moveTo(-8, 0);
+        this.ctx.lineTo(-10, this.animationFrame % 200 > 100 ? 2 : -2);
+        this.ctx.stroke();
         
         this.ctx.restore();
     }
@@ -574,38 +829,99 @@ class PacRatGame {
     drawRat(rat) {
         const px = rat.x * this.tileSize + this.tileSize / 2;
         const py = rat.y * this.tileSize + this.tileSize / 2;
-        const radius = this.tileSize / 2 - 2;
         
-        // If powered, rats turn blue
-        const color = this.player.powered ? '#0000FF' : rat.color;
+        // If powered, rats turn blue and look scared
+        const color = this.player.powered ? '#6495ED' : rat.color;
+        const scared = this.player.powered;
         
-        // Body
+        // Draw round body
         this.ctx.fillStyle = color;
         this.ctx.beginPath();
-        this.ctx.arc(px, py, radius, 0, Math.PI * 2);
+        this.ctx.arc(px, py + 1, 7, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Eyes
-        this.ctx.fillStyle = '#FFF';
-        const eyeOffset = radius / 3;
+        // Draw head (slightly smaller circle)
+        this.ctx.fillStyle = color;
         this.ctx.beginPath();
-        this.ctx.arc(px - eyeOffset, py - eyeOffset, 3, 0, Math.PI * 2);
-        this.ctx.arc(px + eyeOffset, py - eyeOffset, 3, 0, Math.PI * 2);
+        this.ctx.arc(px, py - 2, 5, 0, Math.PI * 2);
         this.ctx.fill();
         
-        // Pupils
+        // Draw large round ears
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        this.ctx.arc(px - 4, py - 5, 3, 0, Math.PI * 2);
+        this.ctx.arc(px + 4, py - 5, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw inner ear (pink)
+        this.ctx.fillStyle = '#FFB8D0';
+        this.ctx.beginPath();
+        this.ctx.arc(px - 4, py - 5, 1.5, 0, Math.PI * 2);
+        this.ctx.arc(px + 4, py - 5, 1.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw cute big eyes
+        this.ctx.fillStyle = '#FFF';
+        this.ctx.beginPath();
+        this.ctx.arc(px - 2, py - 2, scared ? 2 : 2.5, 0, Math.PI * 2);
+        this.ctx.arc(px + 2, py - 2, scared ? 2 : 2.5, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw pupils (bigger for cuteness)
         this.ctx.fillStyle = '#000';
         this.ctx.beginPath();
-        this.ctx.arc(px - eyeOffset, py - eyeOffset, 1.5, 0, Math.PI * 2);
-        this.ctx.arc(px + eyeOffset, py - eyeOffset, 1.5, 0, Math.PI * 2);
+        if (scared) {
+            // Scared eyes - smaller pupils
+            this.ctx.arc(px - 2, py - 2, 0.8, 0, Math.PI * 2);
+            this.ctx.arc(px + 2, py - 2, 0.8, 0, Math.PI * 2);
+        } else {
+            // Normal eyes - big pupils
+            this.ctx.arc(px - 2, py - 2, 1.5, 0, Math.PI * 2);
+            this.ctx.arc(px + 2, py - 2, 1.5, 0, Math.PI * 2);
+        }
         this.ctx.fill();
         
-        // Ears
-        this.ctx.fillStyle = color;
+        // Draw eye shine
+        this.ctx.fillStyle = '#FFF';
         this.ctx.beginPath();
-        this.ctx.ellipse(px - radius, py - radius, 4, 6, -Math.PI / 4, 0, Math.PI * 2);
-        this.ctx.ellipse(px + radius, py - radius, 4, 6, Math.PI / 4, 0, Math.PI * 2);
+        this.ctx.arc(px - 1.5, py - 2.5, 0.5, 0, Math.PI * 2);
+        this.ctx.arc(px + 2.5, py - 2.5, 0.5, 0, Math.PI * 2);
         this.ctx.fill();
+        
+        // Draw cute little nose
+        this.ctx.fillStyle = '#FFB8D0';
+        this.ctx.beginPath();
+        this.ctx.arc(px, py, 1, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        // Draw whiskers
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 0.5;
+        this.ctx.beginPath();
+        // Left whiskers
+        this.ctx.moveTo(px - 1, py);
+        this.ctx.lineTo(px - 6, py - 1);
+        this.ctx.moveTo(px - 1, py);
+        this.ctx.lineTo(px - 6, py);
+        this.ctx.moveTo(px - 1, py);
+        this.ctx.lineTo(px - 6, py + 1);
+        // Right whiskers
+        this.ctx.moveTo(px + 1, py);
+        this.ctx.lineTo(px + 6, py - 1);
+        this.ctx.moveTo(px + 1, py);
+        this.ctx.lineTo(px + 6, py);
+        this.ctx.moveTo(px + 1, py);
+        this.ctx.lineTo(px + 6, py + 1);
+        this.ctx.stroke();
+        
+        // Draw tail
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 2;
+        this.ctx.lineCap = 'round';
+        this.ctx.beginPath();
+        this.ctx.moveTo(px, py + 7);
+        this.ctx.quadraticCurveTo(px - 3, py + 10, px - 2, py + 12);
+        this.ctx.stroke();
     }
     
     drawPrairieDog(x, y) {
