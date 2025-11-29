@@ -16,6 +16,7 @@ class PacRatGame {
         this.gridWidth = 28;
         this.gridHeight = 31;
         this.TUNNEL_ROW = 14; // Row where tunnel wrapping occurs (zero-based index, corresponds to maze[14])
+        this.DEATH_ANIMATION_DURATION = 1500; // Duration of death animation in milliseconds
         
         // Rat base boundaries (for candy spawn exclusion)
         this.RAT_BASE_MIN_X = 10;
@@ -181,14 +182,14 @@ class PacRatGame {
         };
         
         this.canvas.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-            touchStartY = e.changedTouches[0].screenY;
+            touchStartX = e.changedTouches[0].clientX;
+            touchStartY = e.changedTouches[0].clientY;
             e.preventDefault();
         }, { passive: false });
         
         this.canvas.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            touchEndY = e.changedTouches[0].screenY;
+            touchEndX = e.changedTouches[0].clientX;
+            touchEndY = e.changedTouches[0].clientY;
             handleSwipe();
             e.preventDefault();
         }, { passive: false });
@@ -479,7 +480,7 @@ class PacRatGame {
         // Handle death animation
         if (this.player.dying) {
             this.player.deathAnimation += deltaTime;
-            if (this.player.deathAnimation >= 1500) { // 1.5 second animation
+            if (this.player.deathAnimation >= this.DEATH_ANIMATION_DURATION) {
                 this.player.dying = false;
                 this.player.deathAnimation = 0;
                 
@@ -863,7 +864,7 @@ class PacRatGame {
         
         // Death animation
         if (this.player.dying) {
-            const progress = this.player.deathAnimation / 1500; // 0 to 1
+            const progress = this.player.deathAnimation / this.DEATH_ANIMATION_DURATION; // 0 to 1
             const shrinkSize = 12 * (1 - progress); // Shrink from 12 to 0
             
             // Draw shrinking player
