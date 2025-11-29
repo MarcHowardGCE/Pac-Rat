@@ -16,6 +16,7 @@ class PacRatGame {
         this.gridWidth = 28;
         this.gridHeight = 31;
         this.TUNNEL_ROW = 14; // Row where tunnel wrapping occurs (zero-based index, corresponds to maze[14])
+        this.DEATH_ANIMATION_DURATION = 1500; // Duration of death animation in milliseconds
         
         // Rat base boundaries (for candy spawn exclusion)
         this.RAT_BASE_MIN_X = 10;
@@ -74,15 +75,17 @@ class PacRatGame {
             speed: 0.15,
             mouthAngle: 0,
             powered: false,
-            powerTimer: 0
+            powerTimer: 0,
+            dying: false,
+            deathAnimation: 0
         };
         
-        // Rats (Enemies)
+        // Rats (Enemies) - exitDelay in milliseconds
         this.rats = [
-            { x: 12, y: 14, color: '#FF0000', startX: 12, startY: 14, direction: { x: 1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 1 }, exitTimer: 0, exitDelay: 0 },
-            { x: 14, y: 14, color: '#FFB8FF', startX: 14, startY: 14, direction: { x: 0, y: -1 }, mode: 'chase', scatterTarget: { x: 2, y: 1 }, exitTimer: 0, exitDelay: 500 },
-            { x: 13, y: 14, color: '#00FFFF', startX: 13, startY: 14, direction: { x: -1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 29 }, exitTimer: 0, exitDelay: 1000 },
-            { x: 15, y: 14, color: '#FFB852', startX: 15, startY: 14, direction: { x: 0, y: 1 }, mode: 'chase', scatterTarget: { x: 2, y: 29 }, exitTimer: 0, exitDelay: 1500 }
+            { x: 12, y: 14, color: '#FF0000', startX: 12, startY: 14, direction: { x: 1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 1 }, exitTimer: 0, exitDelay: 0, hasExited: false },
+            { x: 14, y: 14, color: '#FFB8FF', startX: 14, startY: 14, direction: { x: 0, y: -1 }, mode: 'chase', scatterTarget: { x: 2, y: 1 }, exitTimer: 0, exitDelay: 2000, hasExited: false },
+            { x: 13, y: 14, color: '#00FFFF', startX: 13, startY: 14, direction: { x: -1, y: 0 }, mode: 'chase', scatterTarget: { x: 25, y: 29 }, exitTimer: 0, exitDelay: 4000, hasExited: false },
+            { x: 15, y: 14, color: '#FFB852', startX: 15, startY: 14, direction: { x: 0, y: 1 }, mode: 'chase', scatterTarget: { x: 2, y: 29 }, exitTimer: 0, exitDelay: 6000, hasExited: false }
         ];
         
         // Candy bonus items
@@ -93,10 +96,6 @@ class PacRatGame {
         this.animationFrame = 0;
         this.lastTime = 0;
         
-        // Input handling
-        this.keys = {};
-        this.setupInput();
-        
         // UI elements
         this.startScreen = document.getElementById('start-screen');
         this.gameOverScreen = document.getElementById('game-over-screen');
@@ -104,6 +103,10 @@ class PacRatGame {
         this.startButton = document.getElementById('start-button');
         this.restartButton = document.getElementById('restart-button');
         this.soundButton = document.getElementById('sound-button');
+        
+        // Input handling
+        this.keys = {};
+        this.setupInput();
         
         this.startButton.addEventListener('click', () => this.startGame());
         this.restartButton.addEventListener('click', () => this.restartGame());
@@ -145,6 +148,59 @@ class PacRatGame {
         document.addEventListener('keyup', (e) => {
             this.keys[e.key] = false;
         });
+        
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchEndX = 0;
+        let touchEndY = 0;
+        
+        const handleSwipe = () => {
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+            const minSwipeDistance = 30;
+            
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                // Horizontal swipe
+                if (Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        this.player.nextDirection = { x: 1, y: 0 };
+                    } else {
+                        this.player.nextDirection = { x: -1, y: 0 };
+                    }
+                }
+            } else {
+                // Vertical swipe
+                if (Math.abs(deltaY) > minSwipeDistance) {
+                    if (deltaY > 0) {
+                        this.player.nextDirection = { x: 0, y: 1 };
+                    } else {
+                        this.player.nextDirection = { x: 0, y: -1 };
+                    }
+                }
+            }
+        };
+        
+        this.canvas.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].clientX;
+            touchStartY = e.changedTouches[0].clientY;
+            e.preventDefault();
+        }, { passive: false });
+        
+        this.canvas.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            touchEndY = e.changedTouches[0].clientY;
+            handleSwipe();
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Tap to start on mobile
+        this.startScreen.addEventListener('touchend', (e) => {
+            if (this.state === 'start') {
+                this.startGame();
+                e.preventDefault();
+            }
+        }, { passive: false });
     }
     
     startGame() {
@@ -185,6 +241,7 @@ class PacRatGame {
             rat.y = rat.startY;
             rat.mode = 'chase';
             rat.exitTimer = 0; // Reset exit timer
+            rat.hasExited = false; // Reset exit flag
             if (index === 0) rat.direction = { x: 1, y: 0 };
             else if (index === 1) rat.direction = { x: 0, y: -1 };
             else if (index === 2) rat.direction = { x: -1, y: 0 };
@@ -420,6 +477,33 @@ class PacRatGame {
     update(deltaTime) {
         this.animationFrame += deltaTime;
         
+        // Handle death animation
+        if (this.player.dying) {
+            this.player.deathAnimation += deltaTime;
+            if (this.player.deathAnimation >= this.DEATH_ANIMATION_DURATION) {
+                this.player.dying = false;
+                this.player.deathAnimation = 0;
+                
+                if (this.lives <= 0) {
+                    this.gameOver();
+                } else {
+                    // Reset positions after death animation
+                    this.player.x = 14;
+                    this.player.y = 23;
+                    this.player.direction = { x: 0, y: 0 };
+                    this.player.nextDirection = { x: 0, y: 0 };
+                    
+                    this.rats.forEach((r) => {
+                        r.x = r.startX;
+                        r.y = r.startY;
+                        r.exitTimer = 0;
+                        r.hasExited = false;
+                    });
+                }
+            }
+            return; // Don't update game during death animation
+        }
+        
         // Update player
         this.updatePlayer();
         
@@ -530,9 +614,14 @@ class PacRatGame {
     
     updateRat(rat, deltaTime) {
         // Check if rat should be in base (during exit delay)
-        if (rat.exitTimer < rat.exitDelay) {
+        if (!rat.hasExited && rat.exitTimer < rat.exitDelay) {
             rat.exitTimer += deltaTime;
             return; // Don't move while in base
+        }
+        
+        // Mark as exited once delay is over
+        if (!rat.hasExited && rat.exitTimer >= rat.exitDelay) {
+            rat.hasExited = true;
         }
         
         // Simple AI: Random direction changes at intersections
@@ -656,29 +745,16 @@ class PacRatGame {
                     rat.x = rat.startX;
                     rat.y = rat.startY;
                     rat.exitTimer = 0; // Reset exit timer
+                    rat.hasExited = false; // Reset exit flag
                     this.playEatRatSound();
                     this.updateUI();
-                } else {
-                    // Lose a life
+                } else if (!this.player.dying) {
+                    // Lose a life and trigger death animation
                     this.lives--;
+                    this.player.dying = true;
+                    this.player.deathAnimation = 0;
                     this.playDeathSound();
                     this.updateUI();
-                    
-                    if (this.lives <= 0) {
-                        this.gameOver();
-                    } else {
-                        // Reset positions
-                        this.player.x = 14;
-                        this.player.y = 23;
-                        this.player.direction = { x: 0, y: 0 };
-                        this.player.nextDirection = { x: 0, y: 0 };
-                        
-                        this.rats.forEach((r, index) => {
-                            r.x = r.startX;
-                            r.y = r.startY;
-                            r.exitTimer = 0; // Reset exit timer
-                        });
-                    }
                 }
             }
         });
@@ -786,6 +862,34 @@ class PacRatGame {
         const px = this.player.x * this.tileSize + this.tileSize / 2;
         const py = this.player.y * this.tileSize + this.tileSize / 2;
         
+        // Death animation
+        if (this.player.dying) {
+            const progress = this.player.deathAnimation / this.DEATH_ANIMATION_DURATION; // 0 to 1
+            const shrinkSize = 12 * (1 - progress); // Shrink from 12 to 0
+            
+            // Draw shrinking player
+            this.ctx.fillStyle = '#e8dcc8';
+            this.ctx.beginPath();
+            this.ctx.arc(px, py, shrinkSize, 0, Math.PI * 2);
+            this.ctx.fill();
+            
+            // Draw blood droplets (particles)
+            const numDroplets = 8;
+            for (let i = 0; i < numDroplets; i++) {
+                const angle = (i / numDroplets) * Math.PI * 2;
+                const distance = progress * 20;
+                const dropletX = px + Math.cos(angle) * distance;
+                const dropletY = py + Math.sin(angle) * distance;
+                const dropletSize = 2 * (1 - progress);
+                
+                this.ctx.fillStyle = '#8B0000';
+                this.ctx.beginPath();
+                this.ctx.arc(dropletX, dropletY, dropletSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            return;
+        }
+        
         // Determine rotation based on direction
         let rotation = 0;
         if (this.player.direction.x > 0) rotation = 0;
@@ -865,9 +969,27 @@ class PacRatGame {
         const px = rat.x * this.tileSize + this.tileSize / 2;
         const py = rat.y * this.tileSize + this.tileSize / 2;
         
-        // If powered, rats turn blue and look scared
-        const color = this.player.powered ? '#6495ED' : rat.color;
-        const scared = this.player.powered;
+        // If powered, rats turn blue/white and look scared
+        let color = rat.color;
+        let scared = false;
+        
+        if (this.player.powered) {
+            scared = true;
+            const timeRemaining = this.player.powerTimer;
+            
+            // Flash animation - slow at first, fast when time running out
+            if (timeRemaining < 2000) {
+                // Fast flash (last 2 seconds)
+                const flashSpeed = 150; // milliseconds
+                const isWhite = Math.floor(this.animationFrame / flashSpeed) % 2 === 0;
+                color = isWhite ? '#FFFFFF' : '#6495ED';
+            } else {
+                // Slow flash (first 6 seconds)
+                const flashSpeed = 400; // milliseconds
+                const isWhite = Math.floor(this.animationFrame / flashSpeed) % 2 === 0;
+                color = isWhite ? '#FFFFFF' : '#6495ED';
+            }
+        }
         
         // Draw round body
         this.ctx.fillStyle = color;
@@ -1027,5 +1149,5 @@ class PacRatGame {
 
 // Initialize game when page loads
 window.addEventListener('load', () => {
-    new PacRatGame();
+    window.game = new PacRatGame();
 });
