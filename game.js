@@ -17,6 +17,12 @@ class PacRatGame {
         this.gridHeight = 31;
         this.TUNNEL_ROW = 14; // Row where tunnel wrapping occurs (zero-based index, corresponds to maze[14])
         
+        // Rat base boundaries (for candy spawn exclusion)
+        this.RAT_BASE_MIN_X = 10;
+        this.RAT_BASE_MAX_X = 17;
+        this.RAT_BASE_MIN_Y = 11;
+        this.RAT_BASE_MAX_Y = 18;
+        
         // Set canvas size
         this.canvas.width = this.gridWidth * this.tileSize;
         this.canvas.height = this.gridHeight * this.tileSize;
@@ -373,7 +379,7 @@ class PacRatGame {
         this.updatePlayer();
         
         // Update rats
-        this.rats.forEach(rat => this.updateRat(rat));
+        this.rats.forEach(rat => this.updateRat(rat, deltaTime));
         
         // Check collisions
         this.checkCollisions();
@@ -478,10 +484,10 @@ class PacRatGame {
         });
     }
     
-    updateRat(rat) {
+    updateRat(rat, deltaTime) {
         // Check if rat should be in base (during exit delay)
         if (rat.exitTimer < rat.exitDelay) {
-            rat.exitTimer += 16; // Approximate deltaTime
+            rat.exitTimer += deltaTime;
             return; // Don't move while in base
         }
         
@@ -639,8 +645,9 @@ class PacRatGame {
         const emptySpots = [];
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
-                // Exclude rat base area (rows 11-18, cols 10-17)
-                const inRatBase = (x >= 10 && x <= 17 && y >= 11 && y <= 18);
+                // Exclude rat base area
+                const inRatBase = (x >= this.RAT_BASE_MIN_X && x <= this.RAT_BASE_MAX_X && 
+                                   y >= this.RAT_BASE_MIN_Y && y <= this.RAT_BASE_MAX_Y);
                 if (this.maze[y][x] === 0 && !inRatBase) {
                     emptySpots.push({ x, y });
                 }
