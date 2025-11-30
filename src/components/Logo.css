@@ -1,0 +1,19 @@
+.logo-container {
+  margin-bottom: 10px;
+  padding: 10px;
+  background: rgba(61, 33, 13, 0.8);
+  border-radius: 10px;
+  border: 2px solid #d4a574;
+}
+
+.game-logo {
+  width: 350px;
+  height: auto;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+@media (max-width: 768px) {
+  .game-logo {
+    width: 280px;
+  }
+}
