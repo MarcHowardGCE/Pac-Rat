@@ -198,13 +198,15 @@ function App() {
 
           // Handle collectibles
           if (collected.dot) {
-            if (collectDot(collected.dot.x, collected.dot.y)) {
+            const result = collectDot(collected.dot.x, collected.dot.y);
+            if (result) {
               addScore(SCORES.DOT);
               audioManager.playDotSound();
             }
           }
           if (collected.powerUp) {
-            if (collectPowerUp(collected.powerUp.x, collected.powerUp.y)) {
+            const result = collectPowerUp(collected.powerUp.x, collected.powerUp.y);
+            if (result) {
               addScore(SCORES.POWER_UP);
               activatePowerUp();
               audioManager.playPowerUpSound();
