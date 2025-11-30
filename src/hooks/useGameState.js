@@ -103,6 +103,7 @@ export const useGameState = () => {
    * @param {number} x - Grid X coordinate
    * @param {number} y - Grid Y coordinate
    * @returns {boolean} True if dot was collected
+   * @note Caller is responsible for adding score and playing sound effects
    */
   const collectDot = useCallback((x, y) => {
     // Check if dot exists using ref for synchronous access
@@ -124,6 +125,7 @@ export const useGameState = () => {
    * @param {number} x - Grid X coordinate
    * @param {number} y - Grid Y coordinate
    * @returns {boolean} True if power-up was collected
+   * @note Caller is responsible for adding score, activating power-up, and playing sound effects
    */
   const collectPowerUp = useCallback((x, y) => {
     // Check if power-up exists using ref for synchronous access
