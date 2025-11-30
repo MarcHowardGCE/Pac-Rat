@@ -96,17 +96,20 @@ export const useGameState = () => {
    * Collect a dot from the maze
    * @param {number} x - Grid X coordinate
    * @param {number} y - Grid Y coordinate
+   * @returns {boolean} True if dot was collected
    */
   const collectDot = useCallback((x, y) => {
+    let collected = false;
     setMaze((prevMaze) => {
       const newMaze = prevMaze.map((row) => [...row]);
       if (newMaze[y] && newMaze[y][x] === 2) {
         newMaze[y][x] = 0;
-        addScore(SCORES.DOT);
+        collected = true;
       }
       return newMaze;
     });
-  }, [addScore]);
+    return collected;
+  }, []);
 
   /**
    * Collect a power-up from the maze
@@ -120,13 +123,12 @@ export const useGameState = () => {
       const newMaze = prevMaze.map((row) => [...row]);
       if (newMaze[y] && newMaze[y][x] === 3) {
         newMaze[y][x] = 0;
-        addScore(SCORES.POWER_UP);
         collected = true;
       }
       return newMaze;
     });
     return collected;
-  }, [addScore]);
+  }, []);
 
   /**
    * Check if current level is complete
