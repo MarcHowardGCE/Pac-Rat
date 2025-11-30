@@ -36,9 +36,6 @@ export const usePlayer = (maze) => {
   const playerRef = useRef(player);
   playerRef.current = player;
 
-  // Use ref to store collected items for synchronous access
-  const collectedRef = useRef({ dot: null, powerUp: null });
-
   /**
    * Reset player to starting position
    */
@@ -98,10 +95,10 @@ export const usePlayer = (maze) => {
    */
   const updatePlayer = useCallback(
     (deltaTime, animationFrame) => {
-      // Reset collected items
-      collectedRef.current = { dot: null, powerUp: null };
+      // Track collected items for this update
+      let collected = { dot: null, powerUp: null };
 
-      setPlayer((prev) => {
+      const newState = ((prev) => {
         // Update death animation
         if (prev.dying) {
           const newDeathAnimation = prev.deathAnimation + deltaTime;
@@ -171,9 +168,9 @@ export const usePlayer = (maze) => {
         const currentGridY = Math.round(newY);
         
         if (maze[currentGridY] && maze[currentGridY][currentGridX] === 2) {
-          collectedRef.current.dot = { x: currentGridX, y: currentGridY };
+          collected = { ...collected, dot: { x: currentGridX, y: currentGridY } };
         } else if (maze[currentGridY] && maze[currentGridY][currentGridX] === 3) {
-          collectedRef.current.powerUp = { x: currentGridX, y: currentGridY };
+          collected = { ...collected, powerUp: { x: currentGridX, y: currentGridY } };
         }
 
         return {
@@ -185,9 +182,11 @@ export const usePlayer = (maze) => {
           powered: newPowered,
           powerTimer: newPowerTimer,
         };
-      });
+      })(playerRef.current);
 
-      return collectedRef.current;
+      setPlayer(newState);
+
+      return collected;
     },
     [maze]
   );

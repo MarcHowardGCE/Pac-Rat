@@ -198,13 +198,19 @@ function App() {
 
           // Handle collectibles
           if (collected.dot) {
-            collectDot(collected.dot.x, collected.dot.y);
-            audioManager.playDotSound();
+            const result = collectDot(collected.dot.x, collected.dot.y);
+            if (result) {
+              addScore(SCORES.DOT);
+              audioManager.playDotSound();
+            }
           }
           if (collected.powerUp) {
-            collectPowerUp(collected.powerUp.x, collected.powerUp.y);
-            activatePowerUp();
-            audioManager.playPowerUpSound();
+            const result = collectPowerUp(collected.powerUp.x, collected.powerUp.y);
+            if (result) {
+              addScore(SCORES.POWER_UP);
+              activatePowerUp();
+              audioManager.playPowerUpSound();
+            }
           }
 
           // Update rats

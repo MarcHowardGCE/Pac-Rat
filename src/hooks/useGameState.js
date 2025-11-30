@@ -7,7 +7,7 @@
  * - High score persistence
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { PLAYER_CONFIG, STORAGE_KEYS, SCORES } from '../utils/constants.js';
 import { isLevelComplete } from '../utils/collision.js';
 import { getInitialMaze } from '../utils/mazeData.js';
@@ -23,6 +23,12 @@ export const useGameState = () => {
   const [lives, setLives] = useState(PLAYER_CONFIG.INITIAL_LIVES);
   const [level, setLevel] = useState(1);
   const [maze, setMaze] = useState(() => getInitialMaze());
+  
+  // Use ref to track maze for synchronous access
+  const mazeRef = useRef(maze);
+  useEffect(() => {
+    mazeRef.current = maze;
+  }, [maze]);
   
   // High score from localStorage
   const [highScore, setHighScore] = useState(() => {
@@ -96,37 +102,45 @@ export const useGameState = () => {
    * Collect a dot from the maze
    * @param {number} x - Grid X coordinate
    * @param {number} y - Grid Y coordinate
+   * @returns {boolean} True if dot was collected
+   * @note Caller is responsible for adding score and playing sound effects
    */
   const collectDot = useCallback((x, y) => {
-    setMaze((prevMaze) => {
-      const newMaze = prevMaze.map((row) => [...row]);
-      if (newMaze[y] && newMaze[y][x] === 2) {
+    // Check if dot exists using ref for synchronous access
+    const currentMaze = mazeRef.current;
+    if (currentMaze[y] && currentMaze[y][x] === 2) {
+      // Update maze to remove the dot
+      setMaze((prevMaze) => {
+        const newMaze = prevMaze.map((row) => [...row]);
         newMaze[y][x] = 0;
-        addScore(SCORES.DOT);
-      }
-      return newMaze;
-    });
-  }, [addScore]);
+        return newMaze;
+      });
+      return true;
+    }
+    return false;
+  }, []);
 
   /**
    * Collect a power-up from the maze
    * @param {number} x - Grid X coordinate
    * @param {number} y - Grid Y coordinate
    * @returns {boolean} True if power-up was collected
+   * @note Caller is responsible for adding score, activating power-up, and playing sound effects
    */
   const collectPowerUp = useCallback((x, y) => {
-    let collected = false;
-    setMaze((prevMaze) => {
-      const newMaze = prevMaze.map((row) => [...row]);
-      if (newMaze[y] && newMaze[y][x] === 3) {
+    // Check if power-up exists using ref for synchronous access
+    const currentMaze = mazeRef.current;
+    if (currentMaze[y] && currentMaze[y][x] === 3) {
+      // Update maze to remove the power-up
+      setMaze((prevMaze) => {
+        const newMaze = prevMaze.map((row) => [...row]);
         newMaze[y][x] = 0;
-        addScore(SCORES.POWER_UP);
-        collected = true;
-      }
-      return newMaze;
-    });
-    return collected;
-  }, [addScore]);
+        return newMaze;
+      });
+      return true;
+    }
+    return false;
+  }, []);
 
   /**
    * Check if current level is complete
