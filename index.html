@@ -1,81 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Pac-Rat - A Pac-Man clone with ferrets, rats, and prairie dogs set in the Arizona desert">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pac-Rat - A Pac-Man clone with ferrets, rats, and prairie dogs set in the Arizona desert"
+    />
     <title>Pac-Rat - Desert Adventure</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="game-container">
-        <!-- Logo container -->
-        <div id="logo-container">
-            <svg id="game-logo" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
-                <!-- Ferret silhouette -->
-                <ellipse cx="60" cy="50" rx="25" ry="15" fill="#e8dcc8" stroke="#8b7355" stroke-width="2"/>
-                <circle cx="75" cy="45" r="12" fill="#e8dcc8" stroke="#8b7355" stroke-width="2"/>
-                <ellipse cx="75" cy="45" rx="10" ry="8" fill="#8b7355"/>
-                <circle cx="73" cy="42" r="3" fill="#000"/>
-                <circle cx="77" cy="42" r="3" fill="#000"/>
-                <circle cx="75" cy="47" r="2" fill="#2d1b0e"/>
-                <ellipse cx="70" cy="35" rx="4" ry="5" fill="#e8dcc8"/>
-                <ellipse cx="80" cy="35" rx="4" ry="5" fill="#e8dcc8"/>
-                <path d="M 40 50 Q 35 55 37 58" stroke="#e8dcc8" stroke-width="4" fill="none" stroke-linecap="round"/>
-                <line x1="80" y1="47" x2="87" y2="45" stroke="#000" stroke-width="0.5"/>
-                <line x1="80" y1="47" x2="87" y2="47" stroke="#000" stroke-width="0.5"/>
-                <line x1="80" y1="47" x2="87" y2="49" stroke="#000" stroke-width="0.5"/>
-                <line x1="70" y1="47" x2="63" y2="45" stroke="#000" stroke-width="0.5"/>
-                <line x1="70" y1="47" x2="63" y2="47" stroke="#000" stroke-width="0.5"/>
-                <line x1="70" y1="47" x2="63" y2="49" stroke="#000" stroke-width="0.5"/>
-                
-                <!-- Text -->
-                <text x="100" y="45" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#ffeb3b" stroke="#2d1b0e" stroke-width="1">PAC-RAT</text>
-                <text x="100" y="65" font-family="Arial, sans-serif" font-size="14" fill="#ffca28">Desert Adventure</text>
-            </svg>
-        </div>
-        <canvas id="gameCanvas"></canvas>
-        <div id="start-screen" class="screen">
-            <h1>PAC-RAT</h1>
-            <p class="subtitle">Desert Adventure</p>
-            <div class="instructions">
-                <p>Control the ferret and collect all the dots!</p>
-                <p>🐕 Eat prairie dogs to power up and catch the rats</p>
-                <p>🍬 Collect candy for bonus points</p>
-                <p><strong>Use Arrow Keys, WASD, or Swipe to move</strong></p>
-                <p class="mobile-hint"><strong>Tap anywhere to start!</strong></p>
-            </div>
-            <button id="start-button">START GAME</button>
-            <div class="score-display">
-                <p>High Score: <span id="high-score">0</span></p>
-            </div>
-        </div>
-        <div id="game-over-screen" class="screen hidden">
-            <h1>GAME OVER</h1>
-            <div class="final-score">
-                <p>Your Score: <span id="final-score">0</span></p>
-                <p>High Score: <span id="game-over-high-score">0</span></p>
-            </div>
-            <button id="restart-button">PLAY AGAIN</button>
-        </div>
-        <div id="hud" class="hidden">
-            <div class="hud-item">
-                <span class="label">Score:</span>
-                <span id="score">0</span>
-            </div>
-            <div class="hud-item">
-                <span class="label">Lives:</span>
-                <span id="lives">❤️❤️❤️</span>
-            </div>
-            <div class="hud-item">
-                <span class="label">Level:</span>
-                <span id="level">1</span>
-            </div>
-            <div class="hud-item">
-                <button id="sound-button" class="sound-toggle">🔊</button>
-            </div>
-        </div>
-    </div>
-    <script src="game.js"></script>
-</body>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

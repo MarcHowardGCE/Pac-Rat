@@ -4,7 +4,9 @@
   "description": "A professional Pac-Man clone themed around the Arizona desert",
   "main": "index.html",
   "scripts": {
-    "build": "node build.js",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo \"No tests specified\" && exit 0"
   },
   "repository": {
@@ -23,5 +25,13 @@
   "bugs": {
     "url": "https://github.com/MarcHowardGCE/Pac-Rat/issues"
   },
-  "homepage": "https://github.com/MarcHowardGCE/Pac-Rat#readme"
+  "homepage": "https://github.com/MarcHowardGCE/Pac-Rat#readme",
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "vite": "^7.2.4"
+  }
 }

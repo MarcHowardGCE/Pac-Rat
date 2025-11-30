@@ -1,0 +1,54 @@
+.hud {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(61, 33, 13, 0.9);
+  border-radius: 10px;
+  border: 2px solid #d4a574;
+}
+
+.hud-item {
+  color: #ffd54f;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+.hud-item .label {
+  color: #ffca28;
+  margin-right: 10px;
+}
+
+.sound-toggle {
+  background: rgba(61, 33, 13, 0.8);
+  border: 2px solid #d4a574;
+  padding: 10px 15px;
+  font-size: 1.5em;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  margin: 0;
+}
+
+.sound-toggle:hover {
+  background: rgba(61, 33, 13, 0.95);
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .hud {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .hud-item {
+    font-size: 1em;
+  }
+}
