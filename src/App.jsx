@@ -181,7 +181,7 @@ function App() {
 
         // Handle death animation
         if (player.dying) {
-          const collected = updatePlayer(deltaTime, animationFrame);
+          updatePlayer(deltaTime, animationFrame);
           
           if (player.deathAnimation >= DEATH_ANIMATION_DURATION) {
             const shouldEndGame = loseLife();
