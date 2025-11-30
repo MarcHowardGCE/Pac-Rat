@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/Pac-Rat/',
+  base: '/pac-rat/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
