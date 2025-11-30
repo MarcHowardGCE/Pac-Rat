@@ -55,8 +55,8 @@ export const drawPlayer = (ctx, player, animationFrame) => {
 
   // Death animation
   if (player.dying) {
-    const progress = player.deathAnimation / DEATH_ANIMATION_DURATION;
-    const shrinkSize = 12 * (1 - progress);
+    const progress = Math.min(player.deathAnimation / DEATH_ANIMATION_DURATION, 1);
+    const shrinkSize = Math.max(12 * (1 - progress), 0);
 
     // Draw shrinking player
     ctx.fillStyle = COLORS.PLAYER_NORMAL;
@@ -71,7 +71,7 @@ export const drawPlayer = (ctx, player, animationFrame) => {
       const distance = progress * 20;
       const dropletX = px + Math.cos(angle) * distance;
       const dropletY = py + Math.sin(angle) * distance;
-      const dropletSize = 2 * (1 - progress);
+      const dropletSize = Math.max(2 * (1 - progress), 0);
 
       ctx.fillStyle = '#8B0000';
       ctx.beginPath();
