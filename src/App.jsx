@@ -10,6 +10,7 @@ import { Logo } from './components/Logo.jsx';
 import { HUD } from './components/HUD.jsx';
 import { StartScreen } from './components/StartScreen.jsx';
 import { GameOverScreen } from './components/GameOverScreen.jsx';
+import { PauseScreen } from './components/PauseScreen.jsx';
 import { GameCanvas } from './components/GameCanvas.jsx';
 import { useGameState } from './hooks/useGameState.js';
 import { usePlayer } from './hooks/usePlayer.js';
@@ -42,6 +43,8 @@ function App() {
     maze,
     highScore,
     startGame: startGameState,
+    pauseGame,
+    resumeGame,
     resetLevel,
     nextLevel,
     addScore,
@@ -126,6 +129,36 @@ function App() {
     audioManager.setEnabled(soundEnabled);
     audioManager.playBackgroundMusic();
   }, [startGameState, resetPlayer, resetRats, soundEnabled]);
+
+  /**
+   * Toggle pause state from the HUD or Escape key
+   */
+  const togglePause = useCallback(() => {
+    if (gameState === 'playing') {
+      pauseGame();
+      audioManager.stopBackgroundMusic();
+    } else if (gameState === 'paused') {
+      resumeGame();
+      if (soundEnabled) {
+        audioManager.playBackgroundMusic();
+      }
+    }
+  }, [gameState, pauseGame, resumeGame, soundEnabled]);
+
+  /**
+   * Handle Escape as a pause/resume shortcut
+   */
+  useEffect(() => {
+    const handlePauseKey = (event) => {
+      if (event.key === 'Escape' && (gameState === 'playing' || gameState === 'paused')) {
+        event.preventDefault();
+        togglePause();
+      }
+    };
+
+    document.addEventListener('keydown', handlePauseKey);
+    return () => document.removeEventListener('keydown', handlePauseKey);
+  }, [gameState, togglePause]);
 
   /**
    * Handle level reset after death
@@ -344,6 +377,8 @@ function App() {
             <StartScreen highScore={highScore} onStart={handleStartGame} />
           )}
           
+          {gameState === 'paused' && <PauseScreen onResume={togglePause} />}
+          
           {gameState === 'gameOver' && (
             <GameOverScreen
               score={score}
@@ -360,6 +395,7 @@ function App() {
             level={level}
             soundEnabled={soundEnabled}
             onSoundToggle={toggleSound}
+            onPause={togglePause}
           />
         )}
       </div>
