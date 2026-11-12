@@ -178,7 +178,7 @@ export const useRats = (maze, player) => {
                 // Chase player
                 newDirection = getChaseDirection(rat, possibleDirections, player);
               }
-            else {
+            } else {
               // At a dead end, reverse if the cell behind the rat is open.
               const reverseDirection = { x: -rat.direction.x, y: -rat.direction.y };
               if (canMove(gridX + reverseDirection.x, gridY + reverseDirection.y, maze)) {
