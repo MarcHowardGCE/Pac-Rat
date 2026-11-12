@@ -45,6 +45,10 @@ button:focus-visible {
   background-color: #121c25;
 }
 
+.app[data-maze-theme="crooked-cactus-nursery"] {
+  background-color: #211625;
+}
+
 @media (max-aspect-ratio: 4/5) {
   .app[data-maze-theme] {
     background-size: 100% auto;

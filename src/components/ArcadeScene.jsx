@@ -111,9 +111,36 @@ const CANDY_TUG = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG];
+const SALTY_SNACK = {
+  id: 'salty-snack',
+  title: 'Salty Snack (After Level 3)',
+  duration: 5100,
+  tracks: [
+    { name: 'salt-shard', width: 10, frames: [
+      [0, 43, 57, 'still'], [1610, 43, 57, 'still'], [1740, 42, 55],
+      [2400, 45, 51, 'still', 0.8, 45], [2740, 50, 58, 'still', 0.85, 135],
+      [4600, 50, 58, 'still', 0.85, 135],
+    ] },
+    { name: 'candy', sprites: candy, width: 12, frames: [
+      [0, 68, 57, 'still'], [3490, 68, 57, 'still'], [3690, 69, 53],
+    ] },
+    { name: 'coral', sprites: coral, width: 30, frames: [
+      [0, -16, 55, 'right'], [1150, 30, 55, 'idleRight'],
+      [1430, 32, 55, 'idleRight'], [1710, 34, 57, 'idleRight', 0.94, 8],
+      [1890, 30, 49, 'idleRight', 1.08, -16], [2130, 27, 55, 'idleRight', 0.95, -10],
+      [2480, 27, 55, 'idleRight', 0.95, -10], [2750, 28, 55, 'idleRight'],
+      [4460, 28, 55, 'idleRight'], [4870, 30, 55, 'idleRight', 0.95, -5],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 31, frames: [
+      [2450, 115, 55, 'left'], [3400, 78, 55, 'idleLeft'],
+      [3690, 76, 55, 'idleLeft'], [3990, 76, 55, 'right'], [4800, 116, 55],
+    ] },
+  ],
+};
+
+const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
-export const intermissionAfter = (level) => intermissions[(level - 1) % intermissions.length];
+export const intermissionAfter = (level) => intermissions[level - 1];
 
 function StageActor({ track, elapsed }) {
   const { frames, sprites, width, name } = track;
@@ -126,15 +153,18 @@ function StageActor({ track, elapsed }) {
   const [end, nextX, nextY, , nextScale = 1, nextAngle = 0] = frames[index + 1] ?? frames[index];
   const progress = end === start ? 0 : (elapsed - start) / (end - start);
   const lerp = (from, to) => from + (to - from) * progress;
-  const image = sprites[pose];
-  const src = Array.isArray(image) ? image[Math.floor((elapsed - start) / 110) % image.length] : image;
-
-  return <img className="arcade-scene-actor" data-actor={name} src={src} alt="" draggable="false" style={{
+  const style = {
     left: `${lerp(x, nextX)}%`,
     top: `${lerp(y, nextY)}%`,
     width: `${width}%`,
     transform: `translate(-50%, -50%) rotate(${lerp(angle, nextAngle)}deg) scale(${lerp(scale, nextScale)})`,
-  }} />;
+  };
+  if (!sprites) return <span className="arcade-scene-actor arcade-salt-shard" data-actor={name} style={style} />;
+
+  const image = sprites[pose];
+  const src = Array.isArray(image) ? image[Math.floor((elapsed - start) / 110) % image.length] : image;
+
+  return <img className="arcade-scene-actor" data-actor={name} src={src} alt="" draggable="false" style={style} />;
 }
 
 export function ArcadeStage({ scene, elapsed }) {

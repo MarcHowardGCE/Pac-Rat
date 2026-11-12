@@ -35,6 +35,20 @@
   user-select: none;
 }
 
+.arcade-salt-shard {
+  aspect-ratio: 1.8;
+  background: #c8c4a5;
+  clip-path: polygon(0 64%, 24% 12%, 64% 0, 100% 45%, 78% 87%, 33% 100%);
+}
+
+.arcade-salt-shard::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: #8b9385;
+  clip-path: polygon(0 64%, 33% 53%, 58% 60%, 100% 45%, 78% 87%, 33% 100%);
+}
+
 .arcade-scene-skip {
   position: relative;
   margin: 0;

@@ -268,11 +268,10 @@ function App() {
       if (cue.scene) {
         if (reducedMotion || now >= cue.deadline) finishScene();
       } else if (now >= cue.deadline) {
-        if (cue.kind === 'clear' && !reducedMotion) {
-          const scene = intermissionAfter(level);
-          setRoundCue('intermission', scene.duration, scene);
-        } else if (cue.kind === 'clear') {
-          startNextRound();
+        if (cue.kind === 'clear') {
+          const scene = !reducedMotion && intermissionAfter(level);
+          if (scene) setRoundCue('intermission', scene.duration, scene);
+          else startNextRound();
         } else {
           setRoundCue(null);
         }

@@ -3,6 +3,8 @@ import taffyBackdrop from '../assets/maze/taffy-wash/backdrop.webp';
 import taffyWall from '../assets/maze/taffy-wash/wall.webp';
 import saltglassBackdrop from '../assets/maze/saltglass-flats/backdrop.webp';
 import saltglassWall from '../assets/maze/saltglass-flats/wall.webp';
+import nurseryBackdrop from '../assets/maze/crooked-cactus-nursery/backdrop.webp';
+import nurseryWall from '../assets/maze/crooked-cactus-nursery/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -20,6 +22,11 @@ const themes = new Map([
     id: 'saltglass-flats', backdrop: saltglassBackdrop, material: saltglassWall, rounded: false,
     floor: '#151f29', wall: '#344b51', ink: '#101c26', edge: '#819593',
     den: '#202e38', denRim: '#4b666d', textureAlpha: 0.76,
+  }],
+  [getMazeLayout(4), {
+    id: 'crooked-cactus-nursery', backdrop: nurseryBackdrop, material: nurseryWall, rounded: true,
+    floor: '#291b2e', wall: '#48442d', ink: '#241d29', edge: '#8a8259',
+    den: '#462d30', denRim: '#956654', textureAlpha: 0.7,
   }],
 ]);
 
@@ -77,6 +84,16 @@ function drawDen(ctx, theme) {
   ctx.fill();
   ctx.stroke();
 
+  if (theme.id === 'crooked-cactus-nursery') {
+    ctx.beginPath();
+    ctx.moveTo(left + width * 0.67, top + height - 6);
+    ctx.lineTo(left + width * 0.62, top + height - 22);
+    ctx.lineTo(left + width * 0.66, top + height - 33);
+    ctx.lineTo(left + width * 0.6, top + height - 43);
+    ctx.stroke();
+    return;
+  }
+
   for (let groove = 0; groove < 4; groove++) {
     const x = left + 26 + 43 * groove;
     const y = top + height - 24;
@@ -113,6 +130,12 @@ function drawTunnelMouths(ctx, theme) {
         ctx.lineTo(31, bank * wallOffset);
       }
       ctx.stroke();
+      if (theme.id === 'crooked-cactus-nursery') {
+        ctx.beginPath();
+        ctx.moveTo(10, bank * (wallOffset + 12));
+        ctx.quadraticCurveTo(21, bank * (wallOffset + 16), 36, bank * (wallOffset + 12));
+        ctx.stroke();
+      }
     }
     ctx.restore();
   }
