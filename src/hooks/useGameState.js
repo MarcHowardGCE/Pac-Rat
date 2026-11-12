@@ -7,10 +7,11 @@
  * - High score persistence
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { PLAYER_CONFIG, STORAGE_KEYS, SCORES } from '../utils/constants.js';
+import { useState, useCallback, useRef } from 'react';
+import { PLAYER_CONFIG, STORAGE_KEYS } from '../utils/constants.js';
 import { isLevelComplete } from '../utils/collision.js';
 import { getInitialMaze } from '../utils/mazeData.js';
+import { readStored, writeStored } from '../utils/storage.js';
 
 /**
  * Hook for managing game state
@@ -24,28 +25,31 @@ export const useGameState = () => {
   const [level, setLevel] = useState(1);
   const [maze, setMaze] = useState(() => getInitialMaze());
   
-  // Use ref to track maze for synchronous access
   const mazeRef = useRef(maze);
-  useEffect(() => {
-    mazeRef.current = maze;
-  }, [maze]);
+  const replaceMaze = useCallback((nextMaze) => {
+    mazeRef.current = nextMaze;
+    setMaze(nextMaze);
+  }, []);
   
   // High score from localStorage
   const [highScore, setHighScore] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.HIGH_SCORE);
-    return saved ? parseInt(saved, 10) : 0;
+    const saved = Number(readStored(STORAGE_KEYS.HIGH_SCORE));
+    return Number.isSafeInteger(saved) && saved >= 0 ? saved : 0;
   });
 
   /**
    * Start a new game
    */
-  const startGame = useCallback(() => {
-    setGameState('playing');
+  const resetRun = useCallback((state) => {
+    setGameState(state);
     setScore(0);
     setLives(PLAYER_CONFIG.INITIAL_LIVES);
     setLevel(1);
-    setMaze(getInitialMaze());
-  }, []);
+    replaceMaze(getInitialMaze());
+  }, [replaceMaze]);
+
+  const startGame = useCallback(() => resetRun('playing'), [resetRun]);
+  const returnToTitle = useCallback(() => resetRun('start'), [resetRun]);
 
   const pauseGame = useCallback(() => {
     setGameState((current) => (current === 'playing' ? 'paused' : current));
@@ -59,16 +63,16 @@ export const useGameState = () => {
    * Reset current level
    */
   const resetLevel = useCallback(() => {
-    setMaze(getInitialMaze());
-  }, []);
+    replaceMaze(getInitialMaze());
+  }, [replaceMaze]);
 
   /**
    * Advance to next level
    */
   const nextLevel = useCallback(() => {
     setLevel((prev) => prev + 1);
-    setMaze(getInitialMaze());
-  }, []);
+    replaceMaze(getInitialMaze());
+  }, [replaceMaze]);
 
   /**
    * Add points to score
@@ -102,61 +106,24 @@ export const useGameState = () => {
     // Update high score if needed
     if (score > highScore) {
       setHighScore(score);
-      localStorage.setItem(STORAGE_KEYS.HIGH_SCORE, score.toString());
+      writeStored(STORAGE_KEYS.HIGH_SCORE, score);
     }
   }, [score, highScore]);
 
-  /**
-   * Collect a dot from the maze
-   * @param {number} x - Grid X coordinate
-   * @param {number} y - Grid Y coordinate
-   * @returns {boolean} True if dot was collected
-   * @note Caller is responsible for adding score and playing sound effects
-   */
-  const collectDot = useCallback((x, y) => {
-    // Check if dot exists using ref for synchronous access
+  const collectTile = useCallback((x, y, type) => {
     const currentMaze = mazeRef.current;
-    if (currentMaze[y] && currentMaze[y][x] === 2) {
-      // Update maze to remove the dot
-      setMaze((prevMaze) => {
-        const newMaze = prevMaze.map((row) => [...row]);
-        newMaze[y][x] = 0;
-        return newMaze;
-      });
-      return true;
-    }
-    return false;
-  }, []);
+    if (currentMaze[y]?.[x] !== type) return false;
 
-  /**
-   * Collect a power-up from the maze
-   * @param {number} x - Grid X coordinate
-   * @param {number} y - Grid Y coordinate
-   * @returns {boolean} True if power-up was collected
-   * @note Caller is responsible for adding score, activating power-up, and playing sound effects
-   */
-  const collectPowerUp = useCallback((x, y) => {
-    // Check if power-up exists using ref for synchronous access
-    const currentMaze = mazeRef.current;
-    if (currentMaze[y] && currentMaze[y][x] === 3) {
-      // Update maze to remove the power-up
-      setMaze((prevMaze) => {
-        const newMaze = prevMaze.map((row) => [...row]);
-        newMaze[y][x] = 0;
-        return newMaze;
-      });
-      return true;
-    }
-    return false;
-  }, []);
+    const nextMaze = [...currentMaze];
+    nextMaze[y] = [...currentMaze[y]];
+    nextMaze[y][x] = 0;
+    replaceMaze(nextMaze);
+    return true;
+  }, [replaceMaze]);
 
-  /**
-   * Check if current level is complete
-   * @returns {boolean} True if level is complete
-   */
-  const checkLevelComplete = useCallback(() => {
-    return isLevelComplete(maze);
-  }, [maze]);
+  const collectDot = useCallback((x, y) => collectTile(x, y, 2), [collectTile]);
+  const collectPowerUp = useCallback((x, y) => collectTile(x, y, 3), [collectTile]);
+  const checkLevelComplete = useCallback(() => isLevelComplete(mazeRef.current), []);
 
   return {
     // State
@@ -169,6 +136,7 @@ export const useGameState = () => {
     
     // Actions
     startGame,
+    returnToTitle,
     pauseGame,
     resumeGame,
     resetLevel,

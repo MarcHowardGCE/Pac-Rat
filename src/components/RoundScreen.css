@@ -1,0 +1,124 @@
+.round-screen {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(392px, calc(100% - 18px));
+  padding-top: 12px;
+}
+
+.round-screen h1 {
+  font-size: clamp(1.75rem, 8vw, 3.3rem);
+  text-transform: uppercase;
+}
+
+.round-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 60px;
+  overflow: hidden;
+  background: #371133 center / 128px var(--arcade-floor-texture);
+  border: 1px solid #744952;
+  border-radius: 11px 8px 10px 7px;
+}
+
+.round-art img {
+  display: block;
+  flex: none;
+}
+
+.pause-mark {
+  display: block;
+  width: 17px;
+  height: 21px;
+  border-inline: 5px solid var(--arcade-gold);
+  border-radius: 2px;
+}
+
+.round-stats {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+}
+
+.pause-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.round-stats > div {
+  display: grid;
+  gap: 5px;
+  padding: 8px 4px;
+  background: #1e1120;
+  border: 1px solid #5d3748;
+  border-radius: 7px;
+}
+
+.round-stats dt {
+  color: var(--arcade-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.round-stats dd {
+  color: var(--arcade-gold);
+  font: 700 clamp(0.9rem, 4vw, 1.2rem) / 1 var(--arcade-number);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.round-screen .game-button {
+  width: min(100%, 248px);
+  margin-top: 0;
+}
+
+.pause-hint {
+  color: var(--arcade-muted);
+  font-size: 0.78rem;
+}
+
+.pause-hint kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  color: var(--arcade-cream);
+  background: #1e1120;
+  border: 1px solid var(--arcade-border);
+  border-radius: 4px;
+  font: 0.7rem / 1.4 var(--arcade-number);
+}
+
+.game-over-screen {
+  --arcade-border: #a46568;
+}
+
+.game-over-screen h1 {
+  color: var(--arcade-coral);
+}
+
+.game-over-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.final-run-score {
+  grid-column: 1 / -1;
+}
+
+.final-run-score dd {
+  font-size: clamp(1.4rem, 7vw, 2.2rem);
+}
+
+.game-over-ferret {
+  transform: rotate(-11deg);
+}
+
+.game-over-spark:first-child {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.game-over-spark:last-child {
+  align-self: flex-end;
+  margin-bottom: 9px;
+}

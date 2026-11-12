@@ -5,13 +5,17 @@
  * Manages game loop, state, and coordinates all child components.
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useEffectEvent, useCallback, useRef } from 'react';
 import { Logo } from './components/Logo.jsx';
 import { HUD } from './components/HUD.jsx';
 import { StartScreen } from './components/StartScreen.jsx';
 import { GameOverScreen } from './components/GameOverScreen.jsx';
 import { PauseScreen } from './components/PauseScreen.jsx';
 import { GameCanvas } from './components/GameCanvas.jsx';
+import { RoundCue } from './components/RoundCue.jsx';
+import { TouchControls } from './components/TouchControls.jsx';
+import { ConfirmRunAction, HowToPlay, SettingsMenu } from './components/GameMenus.jsx';
+import { useSettings } from './hooks/useSettings.js';
 import { useGameState } from './hooks/useGameState.js';
 import { usePlayer } from './hooks/usePlayer.js';
 import { useRats } from './hooks/useRats.js';
@@ -23,10 +27,17 @@ import {
   CANDY_LIFETIME,
   DEATH_ANIMATION_DURATION,
   SCORES,
-  STORAGE_KEYS,
   RAT_BASE,
+  MAX_MOVEMENT_DELTA_MS,
 } from './utils/constants.js';
+import { EFFECT_STYLES } from './utils/gameplayEffects.js';
+import { mazeDistancesFrom, mazeTile } from './utils/mazeRouting.js';
 import './App.css';
+
+const LEVEL_CLEAR_MS = 1250;
+const LEVEL_READY_MS = 1000;
+const CANDY_MIN_DISTANCE = 6;
+const CANDY_MAX_DISTANCE = 14;
 
 /**
  * Main App component
@@ -43,9 +54,9 @@ function App() {
     maze,
     highScore,
     startGame: startGameState,
+    returnToTitle,
     pauseGame,
     resumeGame,
-    resetLevel,
     nextLevel,
     addScore,
     loseLife,
@@ -57,297 +68,305 @@ function App() {
 
   // Player management
   const playerHook = usePlayer(maze);
-  const { player, resetPlayer, setNextDirection, activatePowerUp, startDeath, updatePlayer } =
+  const { player, getPlayer, resetPlayer, setNextDirection, clearPendingTurn, activatePowerUp, startDeath, updatePlayer } =
     playerHook;
 
   // Rats (enemies) management
-  const ratsHook = useRats(maze, player);
+  const ratsHook = useRats(maze);
   const { rats, resetRats, resetRat, updateRats } = ratsHook;
 
   // Candies state
-  const [candies, setCandies] = useState([]);
-  const [candyTimer, setCandyTimer] = useState(0);
+  const [candies, setCandyState] = useState([]);
+  const candiesRef = useRef(candies);
+  const candyTimerRef = useRef(0);
+  const setCandies = useCallback((update) => {
+    const next = typeof update === 'function' ? update(candiesRef.current) : update;
+    candiesRef.current = next;
+    setCandyState(next);
+  }, []);
 
   // Animation state
   const [animationFrame, setAnimationFrame] = useState(0);
-  const lastTimeRef = useRef(0);
-  const rafIdRef = useRef(null);
+  const animationTimeRef = useRef(0);
+  const [effects, setEffects] = useState([]);
+  const [roundCue, setRoundCueState] = useState(null);
+  const roundCueRef = useRef(null);
+  const setRoundCue = useCallback((kind, duration = 0) => {
+    const cue = kind ? { kind, deadline: animationTimeRef.current + duration } : null;
+    roundCueRef.current = cue;
+    setRoundCueState(cue);
+  }, []);
+  const roundEndedRef = useRef(false);
 
-  // Audio state
-  const [soundEnabled, setSoundEnabled] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.SOUND_ENABLED);
-    return saved === null ? true : saved === 'true';
-  });
+  const showEffect = useCallback((kind, { x, y }, startedAt) => {
+    setEffects((current) => [
+      ...current.filter((effect) => startedAt - effect.startedAt < EFFECT_STYLES[effect.kind].duration),
+      { kind, x, y, startedAt },
+    ]);
+  }, []);
 
-  /**
-   * Initialize audio context on user interaction
-   */
+  const settings = useSettings();
+  const { sound, music, effects: soundEffects, reducedMotion, highContrast, setPreference } = settings;
+  const [menu, setMenu] = useState('main');
+  const menuOrigin = useRef(null);
+
+  const openMenu = useCallback((next, event) => {
+    menuOrigin.current = event.currentTarget.id;
+    setMenu(next);
+  }, []);
+  const closeMenu = useCallback(() => setMenu('main'), []);
+
   useEffect(() => {
-    const initAudio = () => {
-      audioManager.initialize();
-      audioManager.setEnabled(soundEnabled);
-    };
+    if (menu !== 'main' || !menuOrigin.current) return;
+    document.getElementById(menuOrigin.current)?.focus();
+    menuOrigin.current = null;
+  }, [menu, gameState]);
 
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('keydown', initAudio, { once: true });
+  useEffect(() => {
+    audioManager.setMix({ sound, music, effects: soundEffects });
+    if (gameState === 'playing' && sound && music) {
+      audioManager.playBackgroundMusic();
+    } else {
+      audioManager.stopBackgroundMusic();
+    }
+  }, [gameState, sound, music, soundEffects]);
 
-    return () => {
-      document.removeEventListener('click', initAudio);
-      document.removeEventListener('keydown', initAudio);
-    };
-  }, [soundEnabled]);
-
-  /**
-   * Toggle sound enabled/disabled
-   */
   const toggleSound = useCallback(() => {
-    setSoundEnabled((prev) => {
-      const newValue = !prev;
-      localStorage.setItem(STORAGE_KEYS.SOUND_ENABLED, String(newValue));
-      audioManager.setEnabled(newValue);
-      
-      if (!newValue) {
-        audioManager.stopBackgroundMusic();
-      } else if (gameState === 'playing') {
-        audioManager.playBackgroundMusic();
-      }
-      
-      return newValue;
-    });
-  }, [gameState]);
+    if (!sound) audioManager.initialize();
+    setPreference('sound', !sound);
+  }, [setPreference, sound]);
 
-  /**
-   * Start the game
-   */
-  const handleStartGame = useCallback(() => {
-    startGameState();
+  const resetGameSession = useCallback(() => {
+    roundEndedRef.current = false;
+    menuOrigin.current = null;
+    setMenu('main');
+    setEffects([]);
+    setRoundCue(null);
     resetPlayer();
     resetRats();
     setCandies([]);
-    setCandyTimer(0);
-    audioManager.initialize();
-    audioManager.setEnabled(soundEnabled);
-    audioManager.playBackgroundMusic();
-  }, [startGameState, resetPlayer, resetRats, soundEnabled]);
+    candyTimerRef.current = 0;
+  }, [resetPlayer, resetRats, setCandies, setRoundCue]);
 
-  /**
-   * Toggle pause state from the HUD or Escape key
-   */
+  const handleStartGame = useCallback(() => {
+    audioManager.initialize();
+    resetGameSession();
+    setRoundCue('ready', LEVEL_READY_MS);
+    startGameState();
+  }, [resetGameSession, setRoundCue, startGameState]);
+
+  const handleReturnToTitle = useCallback(() => {
+    resetGameSession();
+    returnToTitle();
+  }, [resetGameSession, returnToTitle]);
+
   const togglePause = useCallback(() => {
     if (gameState === 'playing') {
       pauseGame();
-      audioManager.stopBackgroundMusic();
-    } else if (gameState === 'paused') {
+    } else if (gameState === 'paused' && menu === 'main') {
+      audioManager.initialize();
+      menuOrigin.current = 'hud-pause';
       resumeGame();
-      if (soundEnabled) {
-        audioManager.playBackgroundMusic();
-      }
     }
-  }, [gameState, pauseGame, resumeGame, soundEnabled]);
+  }, [gameState, menu, pauseGame, resumeGame]);
 
-  /**
-   * Handle Escape as a pause/resume shortcut
-   */
   useEffect(() => {
-    const handlePauseKey = (event) => {
-      if (event.key === 'Escape' && (gameState === 'playing' || gameState === 'paused')) {
+    const handleEscape = (event) => {
+      if (event.key !== 'Escape' || event.repeat) return;
+      if (menu !== 'main') {
+        event.preventDefault();
+        closeMenu();
+      } else if (gameState === 'playing' || gameState === 'paused') {
         event.preventDefault();
         togglePause();
       }
     };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [gameState, menu, closeMenu, togglePause]);
 
-    document.addEventListener('keydown', handlePauseKey);
-    return () => document.removeEventListener('keydown', handlePauseKey);
-  }, [gameState, togglePause]);
-
-  /**
-   * Handle level reset after death
-   */
-  const handleLevelReset = useCallback(() => {
+  const resetActorsForReady = useCallback(() => {
     resetPlayer();
     resetRats();
-  }, [resetPlayer, resetRats]);
+    setEffects([]);
+    setRoundCue('ready', LEVEL_READY_MS);
+  }, [resetPlayer, resetRats, setRoundCue]);
 
-  /**
-   * Spawn a candy item
-   */
-  const spawnCandy = useCallback(() => {
-    // Find empty spots to spawn candy, excluding rat base area
+  const spawnCandy = useCallback((playerPosition) => {
+    const { x, y } = playerPosition;
+    const distances = mazeDistancesFrom(mazeTile(Math.round(x), Math.round(y)));
     const emptySpots = [];
+    const nearbySpots = [];
     for (let y = 0; y < maze.length; y++) {
       for (let x = 0; x < maze[y].length; x++) {
-        const inRatBase =
-          x >= RAT_BASE.MIN_X &&
-          x <= RAT_BASE.MAX_X &&
-          y >= RAT_BASE.MIN_Y &&
-          y <= RAT_BASE.MAX_Y;
-        if (maze[y][x] === 0 && !inRatBase) {
-          emptySpots.push({ x, y });
-        }
+        const inRatBase = x >= RAT_BASE.MIN_X && x <= RAT_BASE.MAX_X
+          && y >= RAT_BASE.MIN_Y && y <= RAT_BASE.MAX_Y;
+        const distance = distances[y][x];
+        if (maze[y][x] !== 0 || inRatBase || !Number.isFinite(distance) || distance < CANDY_MIN_DISTANCE) continue;
+        const spot = { x, y };
+        emptySpots.push(spot);
+        if (distance <= CANDY_MAX_DISTANCE) nearbySpots.push(spot);
       }
     }
 
-    if (emptySpots.length > 0) {
-      const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-      setCandies((prev) => [
-        ...prev,
-        {
-          x: spot.x,
-          y: spot.y,
-          timer: CANDY_LIFETIME,
-          type: Math.floor(Math.random() * 3),
-        },
-      ]);
+    const spots = nearbySpots.length ? nearbySpots : emptySpots;
+    if (spots.length) {
+      const spot = spots[Math.floor(Math.random() * spots.length)];
+      setCandies([{ ...spot, timer: CANDY_LIFETIME, type: Math.floor(Math.random() * 3) }]);
     }
-  }, [maze]);
+  }, [maze, setCandies]);
 
-  /**
-   * Game update loop
-   */
-  const gameLoop = useCallback(
-    (timestamp) => {
-      const deltaTime = timestamp - lastTimeRef.current;
-      lastTimeRef.current = timestamp;
+  const advanceFrame = useEffectEvent((deltaTime) => {
+    const now = animationTimeRef.current + deltaTime;
+    animationTimeRef.current = now;
+    setAnimationFrame(now);
 
-      if (gameState === 'playing') {
-        setAnimationFrame((prev) => prev + deltaTime);
-
-        // Handle death animation
-        if (player.dying) {
-          updatePlayer(deltaTime, animationFrame);
-          
-          if (player.deathAnimation >= DEATH_ANIMATION_DURATION) {
-            const shouldEndGame = loseLife();
-            if (shouldEndGame) {
-              endGame();
-              audioManager.stopBackgroundMusic();
-            } else {
-              handleLevelReset();
-            }
-          }
+    const cue = roundCueRef.current;
+    if (cue) {
+      if (now >= cue.deadline) {
+        if (cue.kind === 'clear') {
+          nextLevel();
+          setCandies([]);
+          candyTimerRef.current = 0;
+          resetActorsForReady();
         } else {
-          // Update player
-          const collected = updatePlayer(deltaTime, animationFrame);
+          setRoundCue(null);
+        }
+      }
+    } else if (getPlayer().dying) {
+      const { player: defeatedPlayer } = updatePlayer(deltaTime, now);
 
-          // Handle collectibles
-          if (collected.dot) {
-            const result = collectDot(collected.dot.x, collected.dot.y);
-            if (result) {
-              addScore(SCORES.DOT);
-              audioManager.playDotSound();
-            }
-          }
-          if (collected.powerUp) {
-            const result = collectPowerUp(collected.powerUp.x, collected.powerUp.y);
-            if (result) {
-              addScore(SCORES.POWER_UP);
-              activatePowerUp();
-              audioManager.playPowerUpSound();
-            }
-          }
+      if (defeatedPlayer.deathAnimation >= DEATH_ANIMATION_DURATION) {
+        const shouldEndGame = loseLife();
+        if (shouldEndGame) {
+          roundEndedRef.current = true;
+          endGame();
+          audioManager.stopBackgroundMusic();
+        } else {
+          resetActorsForReady();
+        }
+      }
+    } else {
+      // Update player
+      const collected = updatePlayer(deltaTime, now);
+      let playerPowered = collected.player.powered;
 
-          // Update rats
-          updateRats(deltaTime);
-
-          // Check player-rat collisions
-          const collidedRat = checkPlayerRatCollision(player, rats);
-          if (collidedRat) {
-            if (player.powered) {
-              // Eat the rat
-              addScore(SCORES.RAT);
-              const ratIndex = rats.indexOf(collidedRat);
-              resetRat(ratIndex);
-              audioManager.playEatRatSound();
-            } else {
-              // Player dies
-              startDeath();
-              audioManager.playDeathSound();
-            }
-          }
-
-          // Check candy collisions
-          const candyIndex = checkCandyCollision(player, candies);
-          if (candyIndex !== -1) {
-            addScore(SCORES.CANDY);
-            setCandies((prev) => prev.filter((_, i) => i !== candyIndex));
-            audioManager.playCandySound();
-          }
-
-          // Update candy timer and spawn
-          setCandyTimer((prev) => {
-            const newTimer = prev + deltaTime;
-            if (newTimer > CANDY_SPAWN_INTERVAL && candies.length === 0) {
-              spawnCandy();
-              return 0;
-            }
-            return newTimer;
-          });
-
-          // Update candy lifetimes
-          setCandies((prev) =>
-            prev
-              .map((candy) => ({
-                ...candy,
-                timer: candy.timer - deltaTime,
-              }))
-              .filter((candy) => candy.timer > 0)
-          );
-
-          // Check if level complete
-          if (checkLevelComplete()) {
-            nextLevel();
-            resetPlayer();
-            resetRats();
-            setCandies([]);
-            setCandyTimer(0);
-          }
+      // Handle collectibles
+      if (collected.dot) {
+        const result = collectDot(collected.dot.x, collected.dot.y);
+        if (result) {
+          addScore(SCORES.DOT);
+          showEffect('dot', collected.dot, now);
+          audioManager.playDotSound();
+        }
+      }
+      if (collected.powerUp) {
+        const result = collectPowerUp(collected.powerUp.x, collected.powerUp.y);
+        if (result) {
+          addScore(SCORES.POWER_UP);
+          activatePowerUp();
+          playerPowered = true;
+          showEffect('power', collected.powerUp, now);
+          audioManager.playPowerUpSound();
         }
       }
 
-      rafIdRef.current = requestAnimationFrame(gameLoop);
-    },
-    [
-      gameState,
-      player,
-      rats,
-      candies,
-      animationFrame,
-      maze,
-      updatePlayer,
-      updateRats,
-      collectDot,
-      collectPowerUp,
-      activatePowerUp,
-      addScore,
-      loseLife,
-      endGame,
-      startDeath,
-      resetPlayer,
-      resetRats,
-      resetRat,
-      checkLevelComplete,
-      nextLevel,
-      spawnCandy,
-      handleLevelReset,
-    ]
-  );
-
-  /**
-   * Start/stop game loop based on game state
-   */
-  useEffect(() => {
-    rafIdRef.current = requestAnimationFrame(gameLoop);
-    return () => {
-      if (rafIdRef.current) {
-        cancelAnimationFrame(rafIdRef.current);
+      // A cleared board wins over contact on the same frame as the last dot.
+      if (collected.dot && checkLevelComplete()) {
+        setRoundCue('clear', LEVEL_CLEAR_MS);
+        audioManager.playLevelClearSound();
+        return;
       }
+
+      // Update rats
+      const movedRats = updateRats(deltaTime, { ...collected.player, powered: playerPowered });
+
+      // Check player-rat collisions
+      const collidedRat = checkPlayerRatCollision(collected.player, movedRats);
+      if (collidedRat) {
+        if (playerPowered) {
+          // Eat the rat
+          addScore(SCORES.RAT);
+          const ratIndex = movedRats.indexOf(collidedRat);
+          resetRat(ratIndex);
+          showEffect('rat', collidedRat, now);
+          audioManager.playEatRatSound();
+        } else {
+          // Player dies
+          startDeath();
+          audioManager.playDeathSound();
+        }
+      }
+
+      // Check candy collisions
+      const candyIndex = checkCandyCollision(collected.player, candiesRef.current);
+      if (candyIndex !== -1) {
+        addScore(SCORES.CANDY);
+        showEffect('candy', candiesRef.current[candyIndex], now);
+        setCandies((prev) => prev.filter((_, i) => i !== candyIndex));
+        audioManager.playCandySound();
+      }
+
+      candyTimerRef.current += deltaTime;
+      if (candyTimerRef.current > CANDY_SPAWN_INTERVAL && !candiesRef.current.length) {
+        spawnCandy(collected.player);
+        candyTimerRef.current = 0;
+      }
+
+      if (candiesRef.current.length) {
+        setCandies((current) => current
+          .map((candy) => ({ ...candy, timer: candy.timer - deltaTime }))
+          .filter((candy) => candy.timer > 0)
+        );
+      }
+
+    }
+  });
+
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+
+    let frameId;
+    let lastTimestamp = null;
+    function frame(timestamp) {
+      if (document.visibilityState === 'hidden') return;
+      const deltaTime = lastTimestamp === null
+        ? 0
+        : Math.min(timestamp - lastTimestamp, MAX_MOVEMENT_DELTA_MS);
+      lastTimestamp = timestamp;
+
+      advanceFrame(deltaTime);
+      if (!roundEndedRef.current) frameId = requestAnimationFrame(frame);
+    }
+
+    function interruptPlay() {
+      cancelAnimationFrame(frameId);
+      audioManager.stopBackgroundMusic();
+      clearPendingTurn();
+      pauseGame();
+    }
+
+    function handleVisibility() {
+      if (document.visibilityState === 'hidden') interruptPlay();
+    }
+
+    frameId = requestAnimationFrame(frame);
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('blur', interruptPlay);
+    window.addEventListener('pagehide', interruptPlay);
+    return () => {
+      cancelAnimationFrame(frameId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('blur', interruptPlay);
+      window.removeEventListener('pagehide', interruptPlay);
     };
-  }, [gameLoop]);
+  }, [gameState, clearPendingTurn, pauseGame]);
 
   /**
    * Input handling
    */
-  const { getTouchHandlers } = useInput(setNextDirection, gameState === 'playing');
+  const inputEnabled = gameState === 'playing' && roundCue?.kind !== 'clear' && !player.dying;
+  const touchHandlers = useInput(setNextDirection, inputEnabled);
 
   /**
    * Cleanup on unmount
@@ -359,10 +378,10 @@ function App() {
   }, []);
 
   return (
-    <div className="app">
-      <div className="game-container">
-        <Logo />
-        
+    <div className="app" data-reduced-motion={reducedMotion} data-high-contrast={highContrast}>
+      <div className="game-container" data-state={gameState}>
+        {gameState !== 'start' && <Logo />}
+
         <div className="canvas-wrapper">
           <GameCanvas
             maze={maze}
@@ -370,33 +389,58 @@ function App() {
             rats={rats}
             candies={candies}
             animationFrame={animationFrame}
-            touchHandlers={getTouchHandlers()}
+            effects={effects}
+            reducedMotion={reducedMotion}
+            touchHandlers={touchHandlers}
           />
-          
-          {gameState === 'start' && (
-            <StartScreen highScore={highScore} onStart={handleStartGame} />
+
+          {gameState === 'start' && menu === 'main' && (
+            <StartScreen highScore={highScore} onStart={handleStartGame} onOpenMenu={openMenu} />
           )}
-          
-          {gameState === 'paused' && <PauseScreen onResume={togglePause} />}
-          
+
+          {gameState === 'playing' && roundCue && (
+            <RoundCue key={roundCue.kind} kind={roundCue.kind} level={level} />
+          )}
+
+          {gameState === 'paused' && menu === 'main' && (
+            <PauseScreen score={score} lives={lives} level={level} onResume={togglePause} onOpenMenu={openMenu} />
+          )}
+
+          {menu === 'help' && <HowToPlay onBack={closeMenu} />}
+          {menu === 'settings' && <SettingsMenu settings={settings} onBack={closeMenu} />}
+          {(menu === 'restart' || menu === 'quit') && (
+            <ConfirmRunAction
+              action={menu}
+              onCancel={closeMenu}
+              onConfirm={menu === 'restart' ? handleStartGame : handleReturnToTitle}
+            />
+          )}
+
           {gameState === 'gameOver' && (
             <GameOverScreen
               score={score}
               highScore={highScore}
+              level={level}
               onRestart={handleStartGame}
             />
           )}
         </div>
-        
-        {gameState === 'playing' && (
-          <HUD
-            score={score}
-            lives={lives}
-            level={level}
-            soundEnabled={soundEnabled}
-            onSoundToggle={toggleSound}
-            onPause={togglePause}
-          />
+
+        {gameState !== 'start' && (
+          <>
+            <div className={gameState === 'playing' ? 'hud-slot' : 'hud-slot hud-slot-hidden'} inert={gameState !== 'playing'}>
+              <HUD
+                score={score}
+                lives={lives}
+                level={level}
+                powerMs={player.powered && !player.dying ? player.powerTimer : 0}
+                soundEnabled={sound}
+                onSoundToggle={toggleSound}
+                onPause={togglePause}
+              />
+            </div>
+            <TouchControls active={gameState === 'playing'} enabled={inputEnabled} onDirection={setNextDirection} />
+          </>
         )}
       </div>
     </div>

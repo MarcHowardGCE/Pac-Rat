@@ -1,36 +1,48 @@
-import React, { useRef } from 'react';
+import React from 'react';
+import { useMenuFocus } from './MenuDialog.jsx';
+import ferret from '../assets/ferret/ferret_idle_right.png';
+import coralRat from '../assets/rats/coral/rat_coral_idle_left.png';
 import './StartScreen.css';
-import './PauseScreen.css';
+import './RoundScreen.css';
 
-export const PauseScreen = ({ onResume }) => {
-  const resumeButtonRef = useRef(null);
-
-  const keepFocusInDialog = (event) => {
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      resumeButtonRef.current?.focus();
-    }
-  };
+export const PauseScreen = ({ onResume, onOpenMenu, score, lives, level }) => {
+  const { dialogRef, keepFocus } = useMenuFocus();
 
   return (
     <section
-      className="screen pause-screen"
+      ref={dialogRef}
+      className="screen round-screen pause-screen"
       role="dialog"
       aria-modal="true"
       aria-labelledby="pause-title"
-      onKeyDown={keepFocusInDialog}
+      aria-describedby="pause-hint"
+      onKeyDown={keepFocus}
     >
-      <h1 id="pause-title">PAUSED</h1>
-      <p className="subtitle">The maze can wait.</p>
+      <div className="round-art pause-art" aria-hidden="true">
+        <img src={ferret} alt="" width="90" height="90" />
+        <span className="pause-mark" />
+        <img src={coralRat} alt="" width="90" height="90" />
+      </div>
+      <h1 id="pause-title">Paused</h1>
+      <dl className="round-stats pause-stats">
+        <div><dt>Score</dt><dd>{score}</dd></div>
+        <div><dt>Lives</dt><dd>{lives}</dd></div>
+        <div><dt>Level</dt><dd>{level}</dd></div>
+      </dl>
       <button
-        ref={resumeButtonRef}
         className="game-button"
-        autoFocus
+        data-menu-autofocus
+        aria-keyshortcuts="Escape"
         onClick={onResume}
       >
-        RESUME
+        Resume
       </button>
-      <p className="pause-hint">Press Escape to resume</p>
+      <div className="menu-actions">
+        <button id="pause-settings" className="game-button menu-secondary" onClick={(event) => onOpenMenu('settings', event)}>Settings</button>
+        <button id="pause-restart" className="game-button menu-secondary" onClick={(event) => onOpenMenu('restart', event)}>Restart run</button>
+        <button id="pause-title-button" className="game-button menu-secondary" onClick={(event) => onOpenMenu('quit', event)}>Return to title</button>
+      </div>
+      <p className="pause-hint" id="pause-hint">Press <kbd>Esc</kbd> to resume</p>
     </section>
   );
 };

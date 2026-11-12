@@ -12,11 +12,8 @@ import { useState, useCallback, useRef } from 'react';
 import {
   PLAYER_CONFIG,
   POWER_UP_DURATION,
-  GRID_WIDTH,
-  REFERENCE_FRAME_MS,
-  MAX_MOVEMENT_DELTA_MS,
 } from '../utils/constants.js';
-import { canMove } from '../utils/collision.js';
+import { movePlayer } from '../utils/playerMovement.js';
 
 /**
  * Hook for managing player state and movement
@@ -25,11 +22,13 @@ import { canMove } from '../utils/collision.js';
  */
 export const usePlayer = (maze) => {
   // Player state
-  const [player, setPlayer] = useState({
+  const [player, setPlayerState] = useState({
     x: PLAYER_CONFIG.START_X,
     y: PLAYER_CONFIG.START_Y,
     direction: { x: 0, y: 0 },
+    facingDirection: { x: 1, y: 0 },
     nextDirection: { x: 0, y: 0 },
+    turnBufferMs: 0,
     speed: PLAYER_CONFIG.SPEED,
     mouthAngle: 0,
     powered: false,
@@ -38,9 +37,13 @@ export const usePlayer = (maze) => {
     deathAnimation: 0,
   });
 
-  // Use ref to avoid stale closure issues in update loop
   const playerRef = useRef(player);
-  playerRef.current = player;
+  const setPlayer = useCallback((update) => {
+    const next = typeof update === 'function' ? update(playerRef.current) : update;
+    playerRef.current = next;
+    setPlayerState(next);
+  }, []);
+  const getPlayer = useCallback(() => playerRef.current, []);
 
   /**
    * Reset player to starting position
@@ -50,7 +53,9 @@ export const usePlayer = (maze) => {
       x: PLAYER_CONFIG.START_X,
       y: PLAYER_CONFIG.START_Y,
       direction: { x: 0, y: 0 },
+      facingDirection: { x: 1, y: 0 },
       nextDirection: { x: 0, y: 0 },
+      turnBufferMs: 0,
       speed: PLAYER_CONFIG.SPEED,
       mouthAngle: 0,
       powered: false,
@@ -58,7 +63,7 @@ export const usePlayer = (maze) => {
       dying: false,
       deathAnimation: 0,
     });
-  }, []);
+  }, [setPlayer]);
 
   /**
    * Set the next movement direction (queued input)
@@ -68,8 +73,15 @@ export const usePlayer = (maze) => {
     setPlayer((prev) => ({
       ...prev,
       nextDirection: direction,
+      turnBufferMs: PLAYER_CONFIG.TURN_BUFFER_MS,
     }));
-  }, []);
+  }, [setPlayer]);
+
+  const clearPendingTurn = useCallback(() => {
+    if (playerRef.current.turnBufferMs > 0) {
+      setPlayer((current) => ({ ...current, turnBufferMs: 0 }));
+    }
+  }, [setPlayer]);
 
   /**
    * Activate power-up mode
@@ -80,7 +92,7 @@ export const usePlayer = (maze) => {
       powered: true,
       powerTimer: POWER_UP_DURATION,
     }));
-  }, []);
+  }, [setPlayer]);
 
   /**
    * Start death animation
@@ -91,13 +103,13 @@ export const usePlayer = (maze) => {
       dying: true,
       deathAnimation: 0,
     }));
-  }, []);
+  }, [setPlayer]);
 
   /**
    * Update player position and state
    * @param {number} deltaTime - Time elapsed since last update
    * @param {number} animationFrame - Current animation frame counter
-   * @returns {Object} Collected items {dot: {x, y}, powerUp: {x, y}}
+   * @returns {Object} The new player state and any collectibles encountered
    */
   const updatePlayer = useCallback(
     (deltaTime, animationFrame) => {
@@ -125,50 +137,8 @@ export const usePlayer = (maze) => {
           }
         }
 
-        // Check if player is aligned with grid
-        const gridX = Math.round(prev.x);
-        const gridY = Math.round(prev.y);
-        const alignedX = Math.abs(prev.x - gridX) < 0.1;
-        const alignedY = Math.abs(prev.y - gridY) < 0.1;
-        const isAligned = alignedX && alignedY;
-
-        let newDirection = prev.direction;
-        let newX = prev.x;
-        let newY = prev.y;
-
-        // Try to change direction when aligned
-        if (isAligned && (prev.nextDirection.x !== 0 || prev.nextDirection.y !== 0)) {
-          const nextX = gridX + prev.nextDirection.x;
-          const nextY = gridY + prev.nextDirection.y;
-
-          if (canMove(nextX, nextY, maze)) {
-            newDirection = { ...prev.nextDirection };
-            newX = gridX;
-            newY = gridY;
-          }
-        }
-
-        // Keep movement speed consistent with a 60 Hz reference while limiting large frame jumps.
-        const movementDelta = Math.min(Math.max(deltaTime, 0), MAX_MOVEMENT_DELTA_MS);
-        const movementScale = movementDelta / REFERENCE_FRAME_MS;
-
-        // Move in current direction
-        const moveX = newX + newDirection.x * prev.speed * movementScale;
-        const moveY = newY + newDirection.y * prev.speed * movementScale;
-
-        if (canMove(Math.round(moveX), Math.round(moveY), maze)) {
-          newX = moveX;
-          newY = moveY;
-
-          // Handle tunnel wrapping
-          if (newX < 0) newX = GRID_WIDTH - 1;
-          if (newX >= GRID_WIDTH) newX = 0;
-        } else {
-          // Can't move, snap to grid and stop
-          newX = gridX;
-          newY = gridY;
-          newDirection = { x: 0, y: 0 };
-        }
+        const movement = movePlayer(prev, maze, deltaTime);
+        const { x: newX, y: newY, direction: newDirection } = movement;
 
         // Animate mouth
         const newMouthAngle = Math.abs(Math.sin(animationFrame / 100) * 0.4);
@@ -185,9 +155,8 @@ export const usePlayer = (maze) => {
 
         return {
           ...prev,
-          x: newX,
-          y: newY,
-          direction: newDirection,
+          ...movement,
+          facingDirection: newDirection.x || newDirection.y ? newDirection : prev.facingDirection,
           mouthAngle: newMouthAngle,
           powered: newPowered,
           powerTimer: newPowerTimer,
@@ -196,15 +165,17 @@ export const usePlayer = (maze) => {
 
       setPlayer(newState);
 
-      return collected;
+      return { ...collected, player: newState };
     },
-    [maze]
+    [maze, setPlayer]
   );
 
   return {
     player,
+    getPlayer,
     resetPlayer,
     setNextDirection,
+    clearPendingTurn,
     activatePowerUp,
     startDeath,
     updatePlayer,

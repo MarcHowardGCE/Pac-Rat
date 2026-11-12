@@ -6,13 +6,17 @@
  */
 
 import { TILE_SIZE, COLORS, DEATH_ANIMATION_DURATION } from './constants.js';
+import { drawFerretFrame, getFerretFrame } from './ferretSprites.js';
+import { drawRatFrame, getRatFrame } from './ratSprites.js';
+import { drawPickupFrame, getCandyFrame } from './pickupSprites.js';
+import { drawCandyCue, drawGlint, drawPowerTimer, POWER_WARNING_MS } from './gameplayEffects.js';
 
 /**
  * Draw the maze on the canvas
  * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
  * @param {number[][]} maze - The maze layout array
  */
-export const drawMaze = (ctx, maze) => {
+export const drawMaze = (ctx, maze, pickupSprites, hasArtLayer = false) => {
   const gridHeight = maze.length;
   const gridWidth = maze[0]?.length || 0;
 
@@ -23,6 +27,7 @@ export const drawMaze = (ctx, maze) => {
       const py = y * TILE_SIZE;
 
       if (cell === 1) {
+        if (hasArtLayer) continue;
         // Wall - desert rock style
         ctx.fillStyle = COLORS.WALL;
         ctx.fillRect(px, py, TILE_SIZE, TILE_SIZE);
@@ -30,28 +35,44 @@ export const drawMaze = (ctx, maze) => {
         ctx.lineWidth = 2;
         ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
       } else if (cell === 2) {
-        // Dot
+        if (drawPickupFrame(ctx, pickupSprites?.pellet, px + TILE_SIZE / 2, py + TILE_SIZE / 2, 7)) continue;
         ctx.fillStyle = COLORS.DOT;
         ctx.beginPath();
         ctx.arc(px + TILE_SIZE / 2, py + TILE_SIZE / 2, 2, 0, Math.PI * 2);
         ctx.fill();
       } else if (cell === 3) {
         // Prairie dog power-up
-        drawPrairieDog(ctx, px + TILE_SIZE / 2, py + TILE_SIZE / 2);
+        drawPrairieDog(ctx, px + TILE_SIZE / 2, py + TILE_SIZE / 2, pickupSprites?.prairie_dog);
       }
     }
   }
 };
 
+function drawDefeatFallback(ctx) {
+  ctx.fillStyle = COLORS.PLAYER_NORMAL;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI * 2);
+  ctx.arc(7, 0, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = COLORS.PLAYER_MASK;
+  ctx.beginPath();
+  ctx.ellipse(7, 0, 4, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
 /**
  * Draw the player (ferret) character
  * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
  * @param {Object} player - Player state object
- * @param {number} animationFrame - Current animation frame counter
+ * @param {number} animationFrame - Elapsed animation time in milliseconds
+ * @param {Object|null} sprites - Loaded ferret frames
  */
-export const drawPlayer = (ctx, player, animationFrame) => {
+export const drawPlayer = (ctx, player, animationFrame, sprites, reducedMotion = false) => {
   const px = player.x * TILE_SIZE + TILE_SIZE / 2;
   const py = player.y * TILE_SIZE + TILE_SIZE / 2;
+
+  const frame = getFerretFrame(sprites, player, reducedMotion ? 0 : animationFrame);
 
   // Harmless arcade defeat: the ferret shrinks away and leaves a few stars.
   if (player.dying) {
@@ -66,54 +87,42 @@ export const drawPlayer = (ctx, player, animationFrame) => {
     if (bodyScale > 0) {
       ctx.save();
       ctx.translate(px, py);
-      ctx.rotate(progress * Math.PI * 2);
-      ctx.scale(bodyScale, bodyScale);
+      if (!reducedMotion) {
+        ctx.rotate(progress * Math.PI * 2);
+        ctx.scale(bodyScale, bodyScale);
+      }
       ctx.globalAlpha = bodyAlpha;
 
-      ctx.fillStyle = COLORS.PLAYER_NORMAL;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI * 2);
-      ctx.arc(7, 0, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = COLORS.PLAYER_MASK;
-      ctx.beginPath();
-      ctx.ellipse(7, 0, 4, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
+      if (frame) {
+        drawFerretFrame(ctx, frame, 0, 0);
+      } else {
+        drawDefeatFallback(ctx);
+      }
 
       ctx.restore();
     }
 
-    const sparkleProgress = Math.min(Math.max((progress - 0.35) / 0.65, 0), 1);
-    const sparkleAlpha = 1 - sparkleProgress;
-    const sparkleColors = [COLORS.PLAYER_NORMAL, '#e66e78', '#a78bae', '#c6d95d'];
-
-    if (sparkleAlpha > 0) {
-      for (let i = 0; i < sparkleColors.length; i++) {
-        const angle = (i / sparkleColors.length) * Math.PI * 2 - Math.PI / 4;
-        const distance = 5 + sparkleProgress * 17;
-        const x = px + Math.cos(angle) * distance;
-        const y = py + Math.sin(angle) * distance;
-        const size = 2 + (1 - sparkleProgress) * 2;
-
-        ctx.save();
-        ctx.globalAlpha = sparkleAlpha;
-        ctx.fillStyle = sparkleColors[i];
-        ctx.beginPath();
-        ctx.moveTo(x, y - size);
-        ctx.lineTo(x + size * 0.32, y - size * 0.32);
-        ctx.lineTo(x + size, y);
-        ctx.lineTo(x + size * 0.32, y + size * 0.32);
-        ctx.lineTo(x, y + size);
-        ctx.lineTo(x - size * 0.32, y + size * 0.32);
-        ctx.lineTo(x - size, y);
-        ctx.lineTo(x - size * 0.32, y - size * 0.32);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
+    if (progress >= 0.18 && progress < 1) {
+      const sparkleProgress = (progress - 0.18) / 0.82;
+      const sparkleColors = [COLORS.PLAYER_NORMAL, '#e66e78', '#a78bae', '#c6d95d'];
+      ctx.save();
+      ctx.globalAlpha = 1 - sparkleProgress;
+      sparkleColors.forEach((color, index) => {
+        const angle = index * Math.PI / 2 - Math.PI / 4;
+        const distance = reducedMotion ? 9 : 5 + sparkleProgress * 17;
+        ctx.fillStyle = color;
+        drawGlint(ctx, px + Math.cos(angle) * distance, py + Math.sin(angle) * distance, 3);
+      });
+      ctx.restore();
     }
 
+    return;
+  }
+
+  if (player.powered) drawPowerTimer(ctx, px, py, player.powerTimer);
+
+  if (frame) {
+    drawFerretFrame(ctx, frame, px, py);
     return;
   }
 
@@ -186,7 +195,7 @@ export const drawPlayer = (ctx, player, animationFrame) => {
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(-8, 0);
-  ctx.lineTo(-10, animationFrame % 200 > 100 ? 2 : -2);
+  ctx.lineTo(-10, !reducedMotion && animationFrame % 200 > 100 ? 2 : -2);
   ctx.stroke();
 
   ctx.restore();
@@ -200,30 +209,27 @@ export const drawPlayer = (ctx, player, animationFrame) => {
  * @param {number} powerTimer - Remaining power-up time
  * @param {number} animationFrame - Current animation frame counter
  */
-export const drawRat = (ctx, rat, playerPowered, powerTimer, animationFrame) => {
+export const drawRat = (ctx, rat, playerPowered, powerTimer, animationFrame, ratSprites, reducedMotion = false) => {
   const px = rat.x * TILE_SIZE + TILE_SIZE / 2;
   const py = rat.y * TILE_SIZE + TILE_SIZE / 2;
 
-  // Determine rat color and scared state
-  let color = rat.color;
-  let scared = false;
+  const scared = playerPowered && rat.mode !== 'waiting' && rat.mode !== 'leaving';
+  const warning = scared && powerTimer <= POWER_WARNING_MS;
+  const color = scared ? COLORS.SCARED_RAT_BLUE : rat.color;
 
-  if (playerPowered) {
-    scared = true;
-    const timeRemaining = powerTimer;
-
-    // Flash animation - slow at first, fast when time running out
-    if (timeRemaining < 2000) {
-      // Fast flash (last 2 seconds)
-      const flashSpeed = 150;
-      const isWhite = Math.floor(animationFrame / flashSpeed) % 2 === 0;
-      color = isWhite ? COLORS.SCARED_RAT_WHITE : COLORS.SCARED_RAT_BLUE;
-    } else {
-      // Slow flash (first 6 seconds)
-      const flashSpeed = 400;
-      const isWhite = Math.floor(animationFrame / flashSpeed) % 2 === 0;
-      color = isWhite ? COLORS.SCARED_RAT_WHITE : COLORS.SCARED_RAT_BLUE;
+  const frame = getRatFrame(ratSprites, rat, scared, reducedMotion ? 0 : animationFrame);
+  if (frame) {
+    if (scared) {
+      ctx.save();
+      ctx.strokeStyle = warning ? '#ed9c86' : color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, py, TILE_SIZE * 0.55, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
+    drawRatFrame(ctx, frame, px, py);
+    return;
   }
 
   // Draw round body
@@ -320,7 +326,9 @@ export const drawRat = (ctx, rat, playerPowered, powerTimer, animationFrame) => 
  * @param {number} x - X coordinate (center)
  * @param {number} y - Y coordinate (center)
  */
-export const drawPrairieDog = (ctx, x, y) => {
+export const drawPrairieDog = (ctx, x, y, frame) => {
+  if (drawPickupFrame(ctx, frame, x, y, 20)) return;
+
   const radius = 6;
 
   // Body
@@ -355,9 +363,12 @@ export const drawPrairieDog = (ctx, x, y) => {
  * @param {CanvasRenderingContext2D} ctx - Canvas rendering context
  * @param {Object} candy - Candy state object with x, y, type properties
  */
-export const drawCandy = (ctx, candy) => {
+export const drawCandy = (ctx, candy, pickupSprites, reducedMotion = false) => {
   const px = candy.x * TILE_SIZE + TILE_SIZE / 2;
   const py = candy.y * TILE_SIZE + TILE_SIZE / 2;
+
+  drawCandyCue(ctx, px, py, candy.timer, reducedMotion);
+  if (drawPickupFrame(ctx, getCandyFrame(pickupSprites, candy.type), px, py, 22)) return;
 
   // Get candy color based on type
   const color = COLORS.CANDY_COLORS[candy.type % COLORS.CANDY_COLORS.length];

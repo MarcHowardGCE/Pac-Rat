@@ -1,0 +1,99 @@
+.menu-dialog {
+  display: grid;
+  gap: 13px;
+}
+
+.menu-dialog h2 {
+  color: var(--arcade-gold);
+  font: 900 clamp(1.45rem, 6vw, 2.5rem) / 1.1 var(--arcade-display);
+}
+
+.menu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.menu-actions .game-button {
+  margin-top: 0;
+}
+
+.menu-help,
+.settings-list,
+.menu-message {
+  background: #1e1120;
+  border: 1px solid #5d3748;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.menu-help {
+  display: grid;
+  gap: 8px;
+  padding: 11px 12px 11px 28px;
+  font-size: 0.85rem;
+}
+
+.menu-message {
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.83rem;
+}
+
+.setting-row + .setting-row {
+  border-top: 1px solid var(--arcade-border);
+}
+
+.setting-row small {
+  display: block;
+  margin-top: 2px;
+  color: var(--arcade-muted);
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.setting-row input {
+  flex: none;
+  width: 19px;
+  height: 19px;
+  accent-color: var(--arcade-gold);
+}
+
+.setting-row input:focus-visible {
+  outline: 2px solid var(--arcade-gold);
+  outline-offset: 3px;
+}
+
+.start-screen .start-menu-actions {
+  width: min(100%, 278px);
+}
+
+.start-screen .start-menu-actions .game-button {
+  flex: 1;
+  width: auto;
+}
+
+.menu-actions .menu-secondary {
+  color: var(--arcade-cream);
+  background: #412132;
+  border-color: #8c5c63;
+  box-shadow: 0 2px 0 var(--arcade-ink);
+  font-size: 0.77rem;
+  padding-inline: 12px;
+}
+
+.menu-actions .menu-secondary:hover {
+  background: #593047;
+}

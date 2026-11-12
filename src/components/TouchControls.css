@@ -1,0 +1,58 @@
+.touch-controls {
+  display: none;
+}
+
+@media (any-pointer: coarse) {
+  .game-container:not([data-state="start"]) {
+    width: min(100%, 568px, max(238px, calc((100svh - 294px) * 0.9032)));
+  }
+
+  .touch-controls {
+    display: grid;
+    grid-template: ". up ." 44px "left down right" 44px / 48px 48px 48px;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .touch-controls[inert] {
+    visibility: hidden;
+  }
+
+  .touch-direction {
+    color: var(--arcade-gold);
+    background: var(--arcade-panel);
+    border: 1px solid var(--arcade-border);
+    border-radius: 9px 7px 9px 7px;
+    box-shadow: 0 2px 0 var(--arcade-ink);
+    font: 700 1.05rem / 1 var(--arcade-body);
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+
+  .touch-direction:active:not(:disabled) {
+    color: var(--arcade-ink);
+    background: var(--arcade-gold);
+    transform: translateY(1px);
+  }
+
+  .touch-direction:disabled {
+    opacity: 0.45;
+  }
+
+  .touch-direction[data-direction="up"] { grid-area: up; }
+  .touch-direction[data-direction="left"] { grid-area: left; }
+  .touch-direction[data-direction="down"] { grid-area: down; }
+  .touch-direction[data-direction="right"] { grid-area: right; }
+}
+
+@media (any-pointer: coarse) and (orientation: landscape) and (max-height: 500px) and (min-width: 480px) {
+  .game-container:not([data-state="start"]) {
+    width: min(100%, calc(max(190px, (100svh - 80px) * 0.9032) + 217px));
+    grid-template: "brand brand" auto "board hud" 1fr "board controls" 1fr / minmax(0, 1fr) 208px;
+  }
+
+  .game-container:not([data-state="start"]) .game-brand { grid-area: brand; }
+  .game-container:not([data-state="start"]) .canvas-wrapper { grid-area: board; }
+  .hud-slot { grid-area: hud; align-self: end; }
+  .touch-controls { grid-area: controls; align-self: start; }
+}
