@@ -18,7 +18,7 @@ import { getInitialMaze } from '../utils/mazeData.js';
  */
 export const useGameState = () => {
   // Core game state
-  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'gameOver'
+  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'paused' | 'gameOver'
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(PLAYER_CONFIG.INITIAL_LIVES);
   const [level, setLevel] = useState(1);
@@ -45,6 +45,14 @@ export const useGameState = () => {
     setLives(PLAYER_CONFIG.INITIAL_LIVES);
     setLevel(1);
     setMaze(getInitialMaze());
+  }, []);
+
+  const pauseGame = useCallback(() => {
+    setGameState((current) => (current === 'playing' ? 'paused' : current));
+  }, []);
+
+  const resumeGame = useCallback(() => {
+    setGameState((current) => (current === 'paused' ? 'playing' : current));
   }, []);
 
   /**
@@ -161,6 +169,8 @@ export const useGameState = () => {
     
     // Actions
     startGame,
+    pauseGame,
+    resumeGame,
     resetLevel,
     nextLevel,
     addScore,
