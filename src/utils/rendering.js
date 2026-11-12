@@ -53,31 +53,67 @@ export const drawPlayer = (ctx, player, animationFrame) => {
   const px = player.x * TILE_SIZE + TILE_SIZE / 2;
   const py = player.y * TILE_SIZE + TILE_SIZE / 2;
 
-  // Death animation
+  // Harmless arcade defeat: the ferret shrinks away and leaves a few stars.
   if (player.dying) {
-    const progress = Math.min(player.deathAnimation / DEATH_ANIMATION_DURATION, 1);
-    const shrinkSize = Math.max(12 * (1 - progress), 0);
+    const progress = Math.min(
+      Math.max(player.deathAnimation / DEATH_ANIMATION_DURATION, 0),
+      1
+    );
+    const bodyProgress = Math.min(progress / 0.7, 1);
+    const bodyScale = Math.max(0, 1 - bodyProgress);
+    const bodyAlpha = Math.max(0, 1 - bodyProgress);
 
-    // Draw shrinking player
-    ctx.fillStyle = COLORS.PLAYER_NORMAL;
-    ctx.beginPath();
-    ctx.arc(px, py, shrinkSize, 0, Math.PI * 2);
-    ctx.fill();
+    if (bodyScale > 0) {
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.rotate(progress * Math.PI * 2);
+      ctx.scale(bodyScale, bodyScale);
+      ctx.globalAlpha = bodyAlpha;
 
-    // Draw blood droplets (particles)
-    const numDroplets = 8;
-    for (let i = 0; i < numDroplets; i++) {
-      const angle = (i / numDroplets) * Math.PI * 2;
-      const distance = progress * 20;
-      const dropletX = px + Math.cos(angle) * distance;
-      const dropletY = py + Math.sin(angle) * distance;
-      const dropletSize = Math.max(2 * (1 - progress), 0);
-
-      ctx.fillStyle = '#8B0000';
+      ctx.fillStyle = COLORS.PLAYER_NORMAL;
       ctx.beginPath();
-      ctx.arc(dropletX, dropletY, dropletSize, 0, Math.PI * 2);
+      ctx.ellipse(0, 0, 8, 6, 0, 0, Math.PI * 2);
+      ctx.arc(7, 0, 5, 0, Math.PI * 2);
       ctx.fill();
+
+      ctx.fillStyle = COLORS.PLAYER_MASK;
+      ctx.beginPath();
+      ctx.ellipse(7, 0, 4, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
+
+    const sparkleProgress = Math.min(Math.max((progress - 0.35) / 0.65, 0), 1);
+    const sparkleAlpha = 1 - sparkleProgress;
+    const sparkleColors = [COLORS.PLAYER_NORMAL, '#e66e78', '#a78bae', '#c6d95d'];
+
+    if (sparkleAlpha > 0) {
+      for (let i = 0; i < sparkleColors.length; i++) {
+        const angle = (i / sparkleColors.length) * Math.PI * 2 - Math.PI / 4;
+        const distance = 5 + sparkleProgress * 17;
+        const x = px + Math.cos(angle) * distance;
+        const y = py + Math.sin(angle) * distance;
+        const size = 2 + (1 - sparkleProgress) * 2;
+
+        ctx.save();
+        ctx.globalAlpha = sparkleAlpha;
+        ctx.fillStyle = sparkleColors[i];
+        ctx.beginPath();
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size * 0.32, y - size * 0.32);
+        ctx.lineTo(x + size, y);
+        ctx.lineTo(x + size * 0.32, y + size * 0.32);
+        ctx.lineTo(x, y + size);
+        ctx.lineTo(x - size * 0.32, y + size * 0.32);
+        ctx.lineTo(x - size, y);
+        ctx.lineTo(x - size * 0.32, y - size * 0.32);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     return;
   }
 
