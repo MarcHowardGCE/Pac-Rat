@@ -13,6 +13,7 @@ import { GameOverScreen } from './components/GameOverScreen.jsx';
 import { PauseScreen } from './components/PauseScreen.jsx';
 import { GameCanvas } from './components/GameCanvas.jsx';
 import { ArcadeScene, OPENING_SCENE, intermissionAfter } from './components/ArcadeScene.jsx';
+import { CutsceneViewer } from './components/CutsceneViewer.jsx';
 import { RoundCue } from './components/RoundCue.jsx';
 import { TouchControls } from './components/TouchControls.jsx';
 import { ConfirmRunAction, HowToPlay, SettingsMenu } from './components/GameMenus.jsx';
@@ -114,14 +115,23 @@ function App() {
   const { sound, music, effects: soundEffects, reducedMotion, highContrast, startingLevel, setPreference } = settings;
   const [menu, setMenu] = useState('main');
   const menuOrigin = useRef(null);
+  const restoreViewerFocus = useRef(false);
 
   const openMenu = useCallback((next, event) => {
     menuOrigin.current = event.currentTarget.id;
     setMenu(next);
   }, []);
-  const closeMenu = useCallback(() => setMenu('main'), []);
+  const openCutsceneViewer = useCallback(() => {
+    restoreViewerFocus.current = true;
+    setMenu('cutscenes');
+  }, []);
+  const closeMenu = useCallback(() => setMenu((current) => current === 'cutscenes' ? 'settings' : 'main'), []);
 
   useEffect(() => {
+    if (menu === 'settings' && restoreViewerFocus.current) {
+      restoreViewerFocus.current = false;
+      document.getElementById('settings-cutscenes')?.focus();
+    }
     if (menu !== 'main' || !menuOrigin.current) return;
     document.getElementById(menuOrigin.current)?.focus();
     menuOrigin.current = null;
@@ -144,6 +154,7 @@ function App() {
   const resetGameSession = useCallback(() => {
     roundEndedRef.current = false;
     menuOrigin.current = null;
+    restoreViewerFocus.current = false;
     setMenu('main');
     setEffects([]);
     setRoundCue(null);
@@ -446,7 +457,10 @@ function App() {
           )}
 
           {menu === 'help' && <HowToPlay onBack={closeMenu} />}
-          {menu === 'settings' && <SettingsMenu settings={settings} onBack={closeMenu} />}
+          {menu === 'settings' && (
+            <SettingsMenu settings={settings} onBack={closeMenu} onOpenCutscenes={openCutsceneViewer} />
+          )}
+          {menu === 'cutscenes' && <CutsceneViewer onBack={closeMenu} />}
           {(menu === 'restart' || menu === 'quit') && (
             <ConfirmRunAction
               action={menu}

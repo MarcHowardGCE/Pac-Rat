@@ -38,6 +38,7 @@ const prairieDog = { still: prairieDogSprite };
 // Position, scale, and rotation interpolate to the next frame. An omitted pose hides the actor.
 export const OPENING_SCENE = {
   id: 'candy-ambush',
+  title: 'Candy Ambush (Opening)',
   duration: 4650,
   tracks: [
     { name: 'candy', sprites: candy, width: 12, frames: [
@@ -59,6 +60,7 @@ export const OPENING_SCENE = {
 
 const POWER_BLUFF = {
   id: 'prairie-dog-bluff',
+  title: 'Prairie Dog Bluff (After Level 1)',
   duration: 4800,
   tracks: [
     { name: 'coral', sprites: coral, width: 29, frames: [
@@ -82,6 +84,7 @@ const POWER_BLUFF = {
 
 const CANDY_TUG = {
   id: 'candy-tug',
+  title: 'Candy Tug-of-War (After Level 2)',
   duration: 4900,
   tracks: [
     { name: 'ferret', sprites: ferret, width: 32, frames: [
@@ -109,6 +112,7 @@ const CANDY_TUG = {
 };
 
 const intermissions = [POWER_BLUFF, CANDY_TUG];
+export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[(level - 1) % intermissions.length];
 
 function StageActor({ track, elapsed }) {
@@ -133,6 +137,14 @@ function StageActor({ track, elapsed }) {
   }} />;
 }
 
+export function ArcadeStage({ scene, elapsed }) {
+  return (
+    <div className="arcade-scene-stage" aria-hidden="true">
+      {scene.tracks.map((track) => <StageActor key={track.name} track={track} elapsed={elapsed} />)}
+    </div>
+  );
+}
+
 export function ArcadeScene({ scene, elapsed, onSkip }) {
   const skip = useRef(null);
 
@@ -142,9 +154,7 @@ export function ArcadeScene({ scene, elapsed, onSkip }) {
 
   return (
     <section className="arcade-scene" data-scene={scene.id} aria-label="Arcade cutscene">
-      <div className="arcade-scene-stage" aria-hidden="true">
-        {scene.tracks.map((track) => <StageActor key={track.name} track={track} elapsed={elapsed} />)}
-      </div>
+      <ArcadeStage scene={scene} elapsed={elapsed} />
       <button id="arcade-scene-skip" ref={skip} className="game-button arcade-scene-skip" type="button" onClick={onSkip}>Skip scene</button>
     </section>
   );

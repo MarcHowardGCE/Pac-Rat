@@ -7,7 +7,6 @@
   justify-content: end;
   overflow: hidden;
   padding: clamp(10px, 4%, 22px);
-  background: radial-gradient(ellipse at 50% 46%, var(--arcade-panel), var(--arcade-ink) 73%);
   border: 3px solid var(--arcade-border);
   border-radius: 12px 9px 13px 9px;
 }
@@ -16,6 +15,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  background: radial-gradient(ellipse at 50% 46%, var(--arcade-panel), var(--arcade-ink) 73%);
   pointer-events: none;
 }
 
@@ -44,4 +44,41 @@
 
 .arcade-scene-skip:hover {
   color: var(--arcade-ink);
+}
+
+.cutscene-viewer.menu-dialog {
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: calc(100% - 14px);
+  gap: 8px;
+  padding: clamp(8px, 2vw, 18px);
+}
+
+.cutscene-viewer .setting-row {
+  min-width: 0;
+  padding: 0;
+}
+
+.cutscene-viewer .setting-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.cutscene-viewer-stage {
+  container-type: size;
+  display: grid;
+  place-items: center;
+}
+
+.cutscene-preview {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 0.9032));
+  aspect-ratio: 28 / 31;
+  overflow: hidden;
+  border: 1px solid var(--arcade-border);
+  border-radius: 8px;
+}
+
+.cutscene-viewer .menu-actions .game-button {
+  min-width: 0;
+  padding-inline: 10px;
 }

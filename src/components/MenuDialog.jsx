@@ -21,10 +21,10 @@ export function useMenuFocus() {
   return { dialogRef, keepFocus };
 }
 
-export const MenuDialog = ({ title, children, actions }) => {
+export const MenuDialog = ({ title, children, actions, className = '' }) => {
   const { dialogRef, keepFocus } = useMenuFocus();
   return (
-    <section ref={dialogRef} className="screen menu-dialog" role="dialog" aria-modal="true" aria-labelledby="menu-dialog-title" onKeyDown={keepFocus}>
+    <section ref={dialogRef} className={`screen menu-dialog ${className}`} role="dialog" aria-modal="true" aria-labelledby="menu-dialog-title" onKeyDown={keepFocus}>
       <h2 id="menu-dialog-title">{title}</h2>
       {children}
       <div className="menu-actions">{actions}</div>

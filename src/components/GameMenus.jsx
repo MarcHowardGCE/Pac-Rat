@@ -27,8 +27,15 @@ export const HowToPlay = ({ onBack }) => (
   </MenuDialog>
 );
 
-export const SettingsMenu = ({ settings, onBack }) => (
-  <MenuDialog title="Settings" actions={<BackButton onBack={onBack} />}>
+export const SettingsMenu = ({ settings, onBack, onOpenCutscenes }) => (
+  <MenuDialog title="Settings" actions={(
+    <>
+      <button id="settings-cutscenes" type="button" className="game-button menu-secondary" onClick={onOpenCutscenes}>
+        Cutscene viewer
+      </button>
+      <BackButton onBack={onBack} />
+    </>
+  )}>
     <div className="settings-list">
       <label className="setting-row">
         <span>Starting level<small>Applies to your next run.</small></span>
