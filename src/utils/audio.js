@@ -13,6 +13,7 @@ export class AudioManager {
     this.audioContext = null;
     this.musicLoopTimeout = null;
     this.backgroundMusicPlaying = false;
+    this.musicNoteTimeouts = new Set();
     this.enabled = true;
   }
 
@@ -224,13 +225,15 @@ export class AudioManager {
 
     let time = 0;
     melody.forEach((note) => {
-      setTimeout(() => {
+      const noteTimeout = setTimeout(() => {
+        this.musicNoteTimeouts.delete(noteTimeout);
         if (this.backgroundMusicPlaying && this.enabled) {
           // Vary the waveform for more interest
           const waveform = note.freq > 800 ? 'triangle' : 'square';
           this.playSound(note.freq, note.dur, waveform, 0.06);
         }
       }, time * 1000);
+      this.musicNoteTimeouts.add(noteTimeout);
       time += note.dur;
     });
 
@@ -247,6 +250,8 @@ export class AudioManager {
       clearTimeout(this.musicLoopTimeout);
       this.musicLoopTimeout = null;
     }
+    this.musicNoteTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    this.musicNoteTimeouts.clear();
   }
 
   /**
