@@ -1,3 +1,4 @@
+import sandstoneBackdrop from '../assets/maze/sandstone/backdrop.webp';
 import taffyBackdrop from '../assets/maze/taffy-wash/backdrop.webp';
 import taffyWall from '../assets/maze/taffy-wash/wall.webp';
 import saltglassBackdrop from '../assets/maze/saltglass-flats/backdrop.webp';
@@ -7,6 +8,9 @@ import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
 
 const themes = new Map([
+  [getMazeLayout(1), {
+    id: 'sandstone', backdrop: sandstoneBackdrop, edge: '#8b6158',
+  }],
   [getMazeLayout(2), {
     id: 'taffy-wash', backdrop: taffyBackdrop, material: taffyWall, rounded: true,
     floor: '#2b1724', wall: '#673b40', ink: '#291722', edge: '#a46a63',

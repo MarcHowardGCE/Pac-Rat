@@ -435,7 +435,7 @@ function App() {
         <div className="canvas-wrapper">
           <GameCanvas
             maze={maze}
-            theme={mazeTheme}
+            theme={mazeTheme?.material ? mazeTheme : null}
             player={player}
             rats={rats}
             candies={candies}
