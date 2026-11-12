@@ -35,6 +35,7 @@ import {
 import { EFFECT_STYLES } from './utils/gameplayEffects.js';
 import { mazeDistancesFrom, mazeTile } from './utils/mazeRouting.js';
 import { getMazeLayout } from './utils/mazeData.js';
+import { getLevelMazeTheme } from './utils/levelMazeArt.js';
 import './App.css';
 
 const LEVEL_CLEAR_MS = 1250;
@@ -69,6 +70,7 @@ function App() {
     checkLevelComplete,
   } = gameStateHook;
   const layout = getMazeLayout(level);
+  const mazeTheme = getLevelMazeTheme(layout);
 
   // Player management
   const playerHook = usePlayer(maze);
@@ -420,13 +422,20 @@ function App() {
   }, []);
 
   return (
-    <div className="app" data-reduced-motion={reducedMotion} data-high-contrast={highContrast}>
+    <div
+      className="app"
+      data-reduced-motion={reducedMotion}
+      data-high-contrast={highContrast}
+      data-maze-theme={mazeTheme?.id}
+      style={mazeTheme ? { '--maze-backdrop': `url("${mazeTheme.backdrop}")`, '--maze-edge': mazeTheme.edge } : undefined}
+    >
       <div className="game-container" data-state={gameState}>
         {gameState !== 'start' && <Logo />}
 
         <div className="canvas-wrapper">
           <GameCanvas
             maze={maze}
+            theme={mazeTheme}
             player={player}
             rats={rats}
             candies={candies}

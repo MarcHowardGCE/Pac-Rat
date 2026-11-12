@@ -1,5 +1,6 @@
 import { COLORS, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
+import { drawLevelMazeArt } from './levelMazeArt.js';
 
 const urls = import.meta.glob('../assets/maze/*.png', {
   eager: true,
@@ -73,21 +74,9 @@ function drawFloor(ctx, sprites, x, y, width, px, py) {
   }
 }
 
-export function getMazeArtLayer(maze, sprites) {
-  if (!sprites?.wall || !maze.length || !maze[0].length) return null;
-
-  // Eating a pickup changes the maze array, but it doesn't change the walls.
-  const layout = maze.map((row) => row.map((cell) => cell === 1 ? '1' : '0').join('')).join('/');
-  if (lastBoard?.layout === layout && lastBoard.sprites === sprites) return lastBoard.canvas;
-
-  const canvas = document.createElement('canvas');
-  canvas.width = maze[0].length * TILE_SIZE;
-  canvas.height = maze.length * TILE_SIZE;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return null;
-
+function drawOriginalMazeArt(ctx, maze, sprites) {
   ctx.fillStyle = COLORS.BACKGROUND;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.strokeStyle = '#36222d';
   ctx.lineWidth = 2;
   ctx.lineCap = 'square';
@@ -121,7 +110,27 @@ export function getMazeArtLayer(maze, sprites) {
       drawWallEdges(ctx, exposed, px, py);
     });
   });
+}
 
-  lastBoard = { layout, sprites, canvas };
+export function getMazeArtLayer(maze, sprites, theme = null) {
+  if ((!theme && !sprites?.wall) || !maze.length || !maze[0].length) return null;
+
+  // Collecting a pickup leaves the wall geometry and its art layer intact.
+  const layout = maze.map((row) => row.map((cell) => cell === 1 ? '1' : '0').join('')).join('/');
+  if (lastBoard?.layout === layout && lastBoard.sprites === sprites && lastBoard.theme === theme) return lastBoard.canvas;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = maze[0].length * TILE_SIZE;
+  canvas.height = maze.length * TILE_SIZE;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  if (theme) {
+    drawLevelMazeArt(ctx, maze, theme, sprites);
+  } else {
+    drawOriginalMazeArt(ctx, maze, sprites);
+  }
+
+  lastBoard = { layout, sprites, theme, canvas };
   return canvas;
 }

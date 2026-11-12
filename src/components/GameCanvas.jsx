@@ -12,6 +12,7 @@ import { loadFerretSprites } from '../utils/ferretSprites.js';
 import { loadRatSprites } from '../utils/ratSprites.js';
 import { loadPickupSprites } from '../utils/pickupSprites.js';
 import { getMazeArtLayer, loadMazeSprites } from '../utils/mazeArt.js';
+import { loadLevelMazeImages } from '../utils/levelMazeArt.js';
 import { drawGameplayEffects } from '../utils/gameplayEffects.js';
 import './GameCanvas.css';
 
@@ -21,6 +22,7 @@ const NO_EFFECTS = [];
  * GameCanvas component
  * @param {Object} props - Component props
  * @param {number[][]} props.maze - Current maze layout
+ * @param {Object|null} props.theme - Maze artwork for the active layout
  * @param {Object} props.player - Player state object
  * @param {Array} props.rats - Array of rat state objects
  * @param {Array} props.candies - Array of candy state objects
@@ -30,6 +32,7 @@ const NO_EFFECTS = [];
  */
 export const GameCanvas = ({
   maze,
+  theme = null,
   player,
   rats,
   candies,
@@ -42,7 +45,8 @@ export const GameCanvas = ({
   const [ferretSprites, setFerretSprites] = useState(null);
   const [ratSprites, setRatSprites] = useState(null);
   const [pickupSprites, setPickupSprites] = useState(null);
-  const [mazeSprites, setMazeSprites] = useState(null);
+  const [mazeImages, setMazeImages] = useState(null);
+  const mazeSprites = mazeImages?.theme === theme ? mazeImages.sprites : null;
   const boardLayer = useMemo(() => {
     const layer = document.createElement('canvas');
     layer.width = GRID_WIDTH * TILE_SIZE;
@@ -50,7 +54,7 @@ export const GameCanvas = ({
     const ctx = layer.getContext('2d');
     if (!ctx) return null;
 
-    const mazeArt = getMazeArtLayer(maze, mazeSprites);
+    const mazeArt = getMazeArtLayer(maze, mazeSprites, theme);
     if (mazeArt) {
       ctx.drawImage(mazeArt, 0, 0);
     } else {
@@ -59,7 +63,7 @@ export const GameCanvas = ({
     }
     drawMaze(ctx, maze, pickupSprites, Boolean(mazeArt));
     return layer;
-  }, [maze, mazeSprites, pickupSprites]);
+  }, [maze, mazeSprites, pickupSprites, theme]);
 
   useEffect(() => {
     let active = true;
@@ -72,11 +76,17 @@ export const GameCanvas = ({
     loadPickupSprites().then((sprites) => {
       if (active) setPickupSprites(sprites);
     });
-    loadMazeSprites().then((sprites) => {
-      if (active) setMazeSprites(sprites);
-    });
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loading = theme ? loadLevelMazeImages(theme) : loadMazeSprites();
+    loading.then((sprites) => {
+      if (active) setMazeImages({ theme, sprites });
+    });
+    return () => { active = false; };
+  }, [theme]);
 
   /**
    * Draw the entire game scene

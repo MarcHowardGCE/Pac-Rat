@@ -37,6 +37,20 @@ button:focus-visible {
   padding: 10px 12px 16px;
 }
 
+.app[data-maze-theme] {
+  background: var(--maze-backdrop) center / auto 100% no-repeat, #1b1320;
+}
+
+.app[data-maze-theme="saltglass-flats"] {
+  background-color: #121c25;
+}
+
+@media (max-aspect-ratio: 4/5) {
+  .app[data-maze-theme] {
+    background-size: 100% auto;
+  }
+}
+
 .game-container {
   display: grid;
   gap: 9px;
