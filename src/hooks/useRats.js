@@ -8,7 +8,13 @@
  */
 
 import { useState, useCallback } from 'react';
-import { RAT_CONFIGS, SPEED, GRID_WIDTH } from '../utils/constants.js';
+import {
+  RAT_CONFIGS,
+  SPEED,
+  GRID_WIDTH,
+  REFERENCE_FRAME_MS,
+  MAX_MOVEMENT_DELTA_MS,
+} from '../utils/constants.js';
 import { canMove } from '../utils/collision.js';
 
 /**
@@ -177,8 +183,10 @@ export const useRats = (maze, player) => {
 
           // Move rat
           const speed = player.powered ? SPEED.RAT_SCARED : SPEED.RAT_NORMAL;
-          let newX = rat.x + newDirection.x * speed;
-          let newY = rat.y + newDirection.y * speed;
+          const movementDelta = Math.min(Math.max(deltaTime, 0), MAX_MOVEMENT_DELTA_MS);
+          const movementScale = movementDelta / REFERENCE_FRAME_MS;
+          let newX = rat.x + newDirection.x * speed * movementScale;
+          let newY = rat.y + newDirection.y * speed * movementScale;
 
           // Handle tunnel wrapping
           if (newX < 0) newX = GRID_WIDTH - 1;

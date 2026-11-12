@@ -9,7 +9,13 @@
  */
 
 import { useState, useCallback, useRef } from 'react';
-import { PLAYER_CONFIG, POWER_UP_DURATION, GRID_WIDTH } from '../utils/constants.js';
+import {
+  PLAYER_CONFIG,
+  POWER_UP_DURATION,
+  GRID_WIDTH,
+  REFERENCE_FRAME_MS,
+  MAX_MOVEMENT_DELTA_MS,
+} from '../utils/constants.js';
 import { canMove } from '../utils/collision.js';
 
 /**
@@ -142,9 +148,13 @@ export const usePlayer = (maze) => {
           }
         }
 
+        // Keep movement speed consistent with a 60 Hz reference while limiting large frame jumps.
+        const movementDelta = Math.min(Math.max(deltaTime, 0), MAX_MOVEMENT_DELTA_MS);
+        const movementScale = movementDelta / REFERENCE_FRAME_MS;
+
         // Move in current direction
-        const moveX = newX + newDirection.x * prev.speed;
-        const moveY = newY + newDirection.y * prev.speed;
+        const moveX = newX + newDirection.x * prev.speed * movementScale;
+        const moveY = newY + newDirection.y * prev.speed * movementScale;
 
         if (canMove(Math.round(moveX), Math.round(moveY), maze)) {
           newX = moveX;
