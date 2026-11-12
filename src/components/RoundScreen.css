@@ -7,7 +7,7 @@
 }
 
 .round-screen h1 {
-  font-size: clamp(1.75rem, 8vw, 3.3rem);
+  font-size: min(16cqi, 3.3rem);
   text-transform: uppercase;
 }
 
