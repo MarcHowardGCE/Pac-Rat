@@ -1,0 +1,1220 @@
+{
+  "version": 1,
+  "boundsConvention": "[left, top, rightExclusive, bottomExclusive]",
+  "registration": "Pixel anchors are canvas coordinates. The three base rat poses rotate and stretch at runtime.",
+  "sourceReferences": {
+    "ferret": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+    "coral": "Coral rat four-way sprite sheet.png",
+    "bubblegum": "Smug Bubblegum Rat Sprite.png",
+    "seafoam": "Sleepy seafoam rat sprite.png",
+    "butter": "Butter-yellow maze rat sprite.png",
+    "maze": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+    "pellet": "Butter-yellow Pac-Rat maze dot.png",
+    "prairie_dog": "Prairie Dog Power-Up Sprite.png",
+    "candy": "Three quirky wrapped candy pickups.png"
+  },
+  "proceduralArt": [
+    "pickup and capture effects",
+    "power and expiry rings",
+    "defeat animation",
+    "arcade wordmark"
+  ],
+  "assets": [
+    {
+      "path": "src/assets/ferret/ferret_idle_down.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "idle",
+      "direction": "down",
+      "frame": null,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        44,
+        9,
+        84,
+        104
+      ],
+      "bytes": 8636
+    },
+    {
+      "path": "src/assets/ferret/ferret_idle_left.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "idle",
+      "direction": "left",
+      "frame": null,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        25,
+        42,
+        118,
+        86
+      ],
+      "bytes": 8266
+    },
+    {
+      "path": "src/assets/ferret/ferret_idle_right.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "idle",
+      "direction": "right",
+      "frame": null,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        8,
+        42,
+        104,
+        87
+      ],
+      "bytes": 8549
+    },
+    {
+      "path": "src/assets/ferret/ferret_idle_up.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "idle",
+      "direction": "up",
+      "frame": null,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        44,
+        24,
+        84,
+        120
+      ],
+      "bytes": 9155
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_down_01.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "down",
+      "frame": 1,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        44,
+        7,
+        84,
+        105
+      ],
+      "bytes": 9230
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_down_02.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "down",
+      "frame": 2,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        44,
+        9,
+        84,
+        104
+      ],
+      "bytes": 8736
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_left_01.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "left",
+      "frame": 1,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        23,
+        39,
+        121,
+        89
+      ],
+      "bytes": 9343
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_left_02.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "left",
+      "frame": 2,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        23,
+        41,
+        122,
+        88
+      ],
+      "bytes": 9031
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_right_01.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "right",
+      "frame": 1,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        6,
+        40,
+        106,
+        89
+      ],
+      "bytes": 9509
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_right_02.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "right",
+      "frame": 2,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        6,
+        40,
+        106,
+        87
+      ],
+      "bytes": 9007
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_up_01.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "up",
+      "frame": 1,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        43,
+        23,
+        85,
+        121
+      ],
+      "bytes": 9738
+    },
+    {
+      "path": "src/assets/ferret/ferret_move_up_02.png",
+      "group": "ferret",
+      "sourceReference": "Pac-Rat Ferret 12-Pose Sprite Sheet.png",
+      "state": "move",
+      "direction": "up",
+      "frame": 2,
+      "palette": "aged bone",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        44,
+        23,
+        84,
+        122
+      ],
+      "bytes": 9449
+    },
+    {
+      "path": "src/assets/maze/den_floor.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "den_floor",
+      "direction": null,
+      "frame": null,
+      "palette": "ink plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 6294
+    },
+    {
+      "path": "src/assets/maze/floor.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "floor",
+      "direction": null,
+      "frame": null,
+      "palette": "ink plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 8951
+    },
+    {
+      "path": "src/assets/maze/wall.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "wall",
+      "direction": null,
+      "frame": null,
+      "palette": "sandstone and plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 7296
+    },
+    {
+      "path": "src/assets/maze/wall_alt.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "wall_alt",
+      "direction": null,
+      "frame": null,
+      "palette": "sandstone and plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 6712
+    },
+    {
+      "path": "src/assets/maze/wall_channel.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "wall_channel",
+      "direction": null,
+      "frame": null,
+      "palette": "sandstone and plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 7559
+    },
+    {
+      "path": "src/assets/maze/wall_corner.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "wall_corner",
+      "direction": null,
+      "frame": null,
+      "palette": "sandstone and plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 8512
+    },
+    {
+      "path": "src/assets/maze/wall_edge.png",
+      "group": "maze",
+      "sourceReference": "Pac-Rat Candy-Rot Maze Tile Atlas.png",
+      "state": "wall_edge",
+      "direction": null,
+      "frame": null,
+      "palette": "sandstone and plum",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        0,
+        0,
+        128,
+        128
+      ],
+      "bytes": 8204
+    },
+    {
+      "path": "src/assets/pickups/candy_01.png",
+      "group": "pickup",
+      "sourceReference": "Three quirky wrapped candy pickups.png",
+      "state": "bonus candy",
+      "direction": null,
+      "frame": 1,
+      "palette": "pink",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        32,
+        32
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        4,
+        17,
+        60,
+        46
+      ],
+      "bytes": 4439
+    },
+    {
+      "path": "src/assets/pickups/candy_02.png",
+      "group": "pickup",
+      "sourceReference": "Three quirky wrapped candy pickups.png",
+      "state": "bonus candy",
+      "direction": null,
+      "frame": 2,
+      "palette": "coral",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        32,
+        32
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        4,
+        17,
+        60,
+        46
+      ],
+      "bytes": 4322
+    },
+    {
+      "path": "src/assets/pickups/candy_03.png",
+      "group": "pickup",
+      "sourceReference": "Three quirky wrapped candy pickups.png",
+      "state": "bonus candy",
+      "direction": null,
+      "frame": 3,
+      "palette": "lilac",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        32,
+        32
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        4,
+        17,
+        60,
+        46
+      ],
+      "bytes": 4475
+    },
+    {
+      "path": "src/assets/pickups/pellet.png",
+      "group": "pickup",
+      "sourceReference": "Butter-yellow Pac-Rat maze dot.png",
+      "state": "pellet",
+      "direction": null,
+      "frame": null,
+      "palette": "butter yellow",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        32,
+        32
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        5,
+        4,
+        59,
+        60
+      ],
+      "bytes": 6056
+    },
+    {
+      "path": "src/assets/pickups/prairie_dog.png",
+      "group": "pickup",
+      "sourceReference": "Prairie Dog Power-Up Sprite.png",
+      "state": "power-up",
+      "direction": null,
+      "frame": null,
+      "palette": "warm ochre",
+      "dimensions": [
+        64,
+        64
+      ],
+      "anchor": [
+        32,
+        32
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        15,
+        4,
+        48,
+        60
+      ],
+      "bytes": 4769
+    },
+    {
+      "path": "src/assets/rats/bubblegum/rat_bubblegum_base.png",
+      "group": "bubblegum",
+      "sourceReference": "Smug Bubblegum Rat Sprite.png",
+      "state": "base",
+      "direction": "right",
+      "frame": null,
+      "palette": "bubblegum pink",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        27,
+        118,
+        100
+      ],
+      "bytes": 3554
+    },
+    {
+      "path": "src/assets/rats/bubblegum/rat_bubblegum_base_frightened.png",
+      "group": "bubblegum",
+      "sourceReference": "Smug Bubblegum Rat Sprite.png",
+      "state": "frightened",
+      "direction": "right",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        27,
+        118,
+        100
+      ],
+      "bytes": 3515
+    },
+    {
+      "path": "src/assets/rats/butter/rat_butter_base.png",
+      "group": "butter",
+      "sourceReference": "Butter-yellow maze rat sprite.png",
+      "state": "base",
+      "direction": "right",
+      "frame": null,
+      "palette": "butter yellow",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        37,
+        118,
+        91
+      ],
+      "bytes": 10541
+    },
+    {
+      "path": "src/assets/rats/butter/rat_butter_base_frightened.png",
+      "group": "butter",
+      "sourceReference": "Butter-yellow maze rat sprite.png",
+      "state": "frightened",
+      "direction": "right",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        37,
+        118,
+        91
+      ],
+      "bytes": 10148
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_frightened_down.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "frightened",
+      "direction": "down",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        42,
+        16,
+        83,
+        109
+      ],
+      "bytes": 7893
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_frightened_left.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "frightened",
+      "direction": "left",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        25,
+        42,
+        105,
+        80
+      ],
+      "bytes": 6802
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_frightened_right.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "frightened",
+      "direction": "right",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        21,
+        42,
+        100,
+        81
+      ],
+      "bytes": 6708
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_frightened_up.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "frightened",
+      "direction": "up",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        42,
+        20,
+        84,
+        116
+      ],
+      "bytes": 8156
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_idle_down.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "idle",
+      "direction": "down",
+      "frame": null,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        42,
+        16,
+        83,
+        109
+      ],
+      "bytes": 8043
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_idle_left.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "idle",
+      "direction": "left",
+      "frame": null,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        25,
+        42,
+        105,
+        80
+      ],
+      "bytes": 6925
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_idle_right.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "idle",
+      "direction": "right",
+      "frame": null,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        21,
+        42,
+        100,
+        81
+      ],
+      "bytes": 6861
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_idle_up.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "idle",
+      "direction": "up",
+      "frame": null,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        42,
+        20,
+        84,
+        116
+      ],
+      "bytes": 8340
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_down_01.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "down",
+      "frame": 1,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        43,
+        13,
+        82,
+        113
+      ],
+      "bytes": 8200
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_down_02.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "down",
+      "frame": 2,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        41,
+        19,
+        84,
+        106
+      ],
+      "bytes": 7906
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_left_01.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "left",
+      "frame": 1,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        22,
+        44,
+        107,
+        80
+      ],
+      "bytes": 7015
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_left_02.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "left",
+      "frame": 2,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        27,
+        41,
+        102,
+        81
+      ],
+      "bytes": 6867
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_right_01.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "right",
+      "frame": 1,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        18,
+        43,
+        103,
+        80
+      ],
+      "bytes": 6965
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_right_02.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "right",
+      "frame": 2,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        24,
+        41,
+        99,
+        82
+      ],
+      "bytes": 6927
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_up_01.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "up",
+      "frame": 1,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        43,
+        17,
+        83,
+        120
+      ],
+      "bytes": 8458
+    },
+    {
+      "path": "src/assets/rats/coral/rat_coral_move_up_02.png",
+      "group": "coral",
+      "sourceReference": "Coral rat four-way sprite sheet.png",
+      "state": "move",
+      "direction": "up",
+      "frame": 2,
+      "palette": "coral",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        41,
+        23,
+        85,
+        113
+      ],
+      "bytes": 8200
+    },
+    {
+      "path": "src/assets/rats/seafoam/rat_seafoam_base.png",
+      "group": "seafoam",
+      "sourceReference": "Sleepy seafoam rat sprite.png",
+      "state": "base",
+      "direction": "right",
+      "frame": null,
+      "palette": "seafoam",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": false,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        48,
+        118,
+        79
+      ],
+      "bytes": 8535
+    },
+    {
+      "path": "src/assets/rats/seafoam/rat_seafoam_base_frightened.png",
+      "group": "seafoam",
+      "sourceReference": "Sleepy seafoam rat sprite.png",
+      "state": "frightened",
+      "direction": "right",
+      "frame": null,
+      "palette": "frightened blue",
+      "dimensions": [
+        128,
+        128
+      ],
+      "anchor": [
+        64,
+        64
+      ],
+      "derived": true,
+      "status": "integrated",
+      "alphaBounds": [
+        10,
+        48,
+        118,
+        79
+      ],
+      "bytes": 8507
+    }
+  ]
+}

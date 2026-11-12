@@ -1,54 +1,146 @@
 .hud {
   display: flex;
-  justify-content: space-around;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
   width: 100%;
-  max-width: 600px;
-  margin-top: 20px;
-  padding: 15px;
-  background: rgba(61, 33, 13, 0.9);
-  border-radius: 10px;
-  border: 2px solid #d4a574;
+  padding: 9px 12px;
+  color: var(--arcade-cream);
+  background: var(--arcade-panel);
+  border: 1px solid var(--arcade-border);
+  border-radius: 9px 13px 9px 11px;
+  box-shadow: 0 3px 0 var(--arcade-ink);
+}
+
+.hud-stats,
+.hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-stats {
+  flex: 1 0 auto;
+  justify-content: space-between;
 }
 
 .hud-item {
-  color: #ffd54f;
-  font-size: 1.3em;
-  font-weight: bold;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 3ch;
 }
 
-.hud-item .label {
-  color: #ffca28;
-  margin-right: 10px;
+.hud-item dt {
+  color: var(--arcade-muted);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
 }
 
-.sound-toggle {
-  background: rgba(61, 33, 13, 0.8);
-  border: 2px solid #d4a574;
-  padding: 10px 15px;
-  font-size: 1.5em;
-  cursor: pointer;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+.hud-item dd {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  margin: 0;
+  min-height: 25px;
+  color: var(--arcade-gold);
+  font: 750 1.1rem / 1 var(--arcade-number);
+  font-variant-numeric: tabular-nums;
 }
 
-.sound-toggle:hover {
-  background: rgba(61, 33, 13, 0.95);
-  transform: scale(1.1);
+.hud-lives img {
+  flex: none;
 }
 
-@media (max-width: 768px) {
-  .hud {
-    flex-wrap: wrap;
-    gap: 10px;
+.hud-controls {
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.hud-button {
+  min-height: 44px;
+  padding: 6px 10px;
+  color: var(--arcade-cream);
+  background: #412132;
+  border: 1px solid #8c5c63;
+  border-radius: 6px;
+  font: 700 0.79rem / 1 var(--arcade-body);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hud-button span {
+  color: var(--arcade-gold);
+}
+
+.hud-button:hover {
+  background: #593047;
+}
+
+@media (max-width: 420px) {
+  .hud-controls {
+    flex: 1 0 100%;
   }
 
-  .hud-item {
-    font-size: 1em;
+  .hud-button {
+    flex: 1;
+  }
+}
+
+.hud-slot-hidden {
+  visibility: hidden;
+}
+
+.hud-power dd {
+  position: relative;
+  min-width: 34px;
+  padding-bottom: 5px;
+}
+
+.hud-power-inactive {
+  color: var(--arcade-muted);
+  font-size: 0.72rem;
+}
+
+.hud-power progress {
+  position: absolute;
+  inset: auto 0 0;
+  width: 100%;
+  height: 3px;
+  appearance: none;
+  border: 0;
+  border-radius: 2px;
+  background: #613b4d;
+  color: var(--arcade-gold);
+}
+
+.hud-power progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: #613b4d;
+}
+
+.hud-power progress::-webkit-progress-value {
+  border-radius: inherit;
+  background: currentColor;
+}
+
+.hud-power progress::-moz-progress-bar {
+  border-radius: inherit;
+  background: currentColor;
+}
+
+.hud-power[data-warning="true"] dd,
+.hud-power[data-warning="true"] progress {
+  color: var(--arcade-coral);
+}
+
+@media (max-width: 360px) {
+  .hud-stats {
+    gap: 6px;
+  }
+
+  .hud-item dd {
+    font-size: 0.94rem;
   }
 }

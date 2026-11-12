@@ -1,133 +1,161 @@
+:root {
+  --arcade-floor-texture: url('../assets/maze/floor.png');
+}
+
 .screen {
   position: absolute;
-  top: 50%;
-  left: 50%;
+  inset: 50% auto auto 50%;
   transform: translate(-50%, -50%);
-  background: rgba(61, 33, 13, 0.95);
-  padding: 40px;
-  border-radius: 20px;
-  border: 4px solid #d4a574;
+  width: min(440px, calc(100% - 18px));
+  max-height: calc(100% - 14px);
+  overflow: auto;
+  padding: clamp(12px, 3vw, 28px);
+  color: var(--arcade-cream);
+  background: var(--arcade-panel);
+  border: 2px solid var(--arcade-border);
+  border-radius: 19px 12px 18px 13px;
+  box-shadow: 0 0 0 2px var(--arcade-ink), 0 14px 35px #180f19dd;
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
   z-index: 10;
-  color: #ffd54f;
 }
 
 .screen h1 {
-  font-size: 4em;
-  margin-bottom: 20px;
-  text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8);
-  color: #ffeb3b;
-  letter-spacing: 8px;
+  color: var(--arcade-gold);
+  font: 900 clamp(2rem, 8vw, 4rem) / 1 var(--arcade-display);
+  letter-spacing: 0.045em;
+  text-shadow: 2px 3px #7f3e49, 4px 5px var(--arcade-ink);
+}
+
+.start-screen {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding-top: 10px;
+}
+
+.start-screen h1 {
+  font-size: clamp(2.8rem, 12vw, 5.25rem);
+  padding-block: 0.07em 0.12em;
+  text-shadow: none;
+}
+
+.start-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  height: 66px;
+  background: radial-gradient(ellipse at center, #ae5b6638, transparent 72%), center / 128px var(--arcade-floor-texture);
+  border: 1px solid #744952;
+  border-radius: 11px 8px 10px 7px;
+}
+
+.start-art img {
+  display: block;
+  width: clamp(72px, 24vw, 112px);
+  height: auto;
+  flex: 0 1 auto;
+}
+
+.start-art .start-art-pellet {
+  width: 15px;
+  flex: none;
 }
 
 .subtitle {
-  font-size: 1.5em;
-  margin-bottom: 30px;
-  color: #ffca28;
+  color: var(--arcade-coral);
+  margin-top: 10px;
+  font-size: 0.83rem;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
-.instructions {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 10px;
-  margin: 20px 0;
+.start-screen .subtitle {
+  margin-top: 0;
 }
 
-.instructions p {
-  margin: 10px 0;
-  font-size: 1.1em;
-  line-height: 1.6;
+.start-pickups {
+  display: grid;
+  width: min(100%, 278px);
+  padding: 5px 10px;
+  background: #1e1120;
+  border: 1px solid #5d3748;
+  border-radius: 8px;
+  list-style: none;
+  text-align: left;
+}
+
+.start-pickups li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.start-controls,
+.score-display {
+  color: var(--arcade-muted);
+  font-size: 0.78rem;
+}
+
+.start-controls kbd {
+  display: inline-block;
+  padding: 2px 5px;
+  color: var(--arcade-cream);
+  background: #1e1120;
+  border: 1px solid #744952;
+  border-radius: 4px;
+  font: 0.72rem / 1.2 var(--arcade-number);
 }
 
 .game-button {
-  background: linear-gradient(to bottom, #ff6f00, #e65100);
-  color: white;
-  border: none;
-  padding: 20px 40px;
-  font-size: 1.5em;
-  font-weight: bold;
-  border-radius: 10px;
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 9px 24px;
+  color: #26151f;
+  background: var(--arcade-gold);
+  border: 1px solid #2b1821;
+  border-radius: 7px 10px 7px 8px;
+  box-shadow: 0 3px 0 #98604f;
+  font: 900 0.95rem / 1 var(--arcade-body);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   cursor: pointer;
-  margin-top: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s ease;
 }
 
 .game-button:hover {
-  background: linear-gradient(to bottom, #ff8f00, #f57c00);
-  transform: scale(1.05);
+  background: #ffe5ac;
 }
 
 .game-button:active {
-  transform: scale(0.98);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #98604f;
 }
 
-.score-display {
-  margin-top: 20px;
-  font-size: 1.3em;
+.start-screen .game-button {
+  width: min(100%, 278px);
+  margin-top: 0;
 }
 
 .score-value {
-  font-weight: bold;
-  color: #ffeb3b;
+  color: var(--arcade-gold);
+  font-family: var(--arcade-number);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.final-score {
-  font-size: 1.5em;
-  margin: 30px 0;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 10px;
-}
-
-.final-score p {
-  margin: 15px 0;
-}
-
-/* Mobile hint only shown on mobile */
-.mobile-hint {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .screen {
-    padding: 20px;
-    width: 90%;
+@media (max-width: 360px) {
+  .start-screen {
+    gap: 6px;
   }
 
-  .screen h1 {
-    font-size: 2.5em;
-    letter-spacing: 4px;
+  .start-art {
+    height: 50px;
   }
 
-  .subtitle {
-    font-size: 1.2em;
-  }
-
-  .instructions p {
-    font-size: 0.9em;
-  }
-
-  .mobile-hint {
-    display: block;
-    color: #ffeb3b;
-    font-size: 1.1em !important;
-  }
-
-  .game-button {
-    padding: 15px 30px;
-    font-size: 1.2em;
-  }
-}
-
-@media (max-width: 480px) {
-  .screen h1 {
-    font-size: 2em;
-  }
-
-  .game-button {
-    padding: 12px 24px;
-    font-size: 1em;
+  .start-pickups {
+    padding-block: 3px;
   }
 }

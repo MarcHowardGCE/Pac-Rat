@@ -5,7 +5,7 @@
  * in the Pac-Rat game.
  */
 
-import { TUNNEL_ROW, GRID_HEIGHT, GRID_WIDTH } from './constants.js';
+import { GRID_WIDTH, TUNNEL_ROW } from './constants.js';
 
 /**
  * Check if a position is valid for movement
@@ -15,23 +15,13 @@ import { TUNNEL_ROW, GRID_HEIGHT, GRID_WIDTH } from './constants.js';
  * @returns {boolean} True if the position is valid for movement
  */
 export const canMove = (x, y, maze) => {
-  // Out of bounds check (except for tunnel row)
-  if (
-    y < 0 ||
-    y >= GRID_HEIGHT ||
-    (x < 0 && y !== TUNNEL_ROW) ||
-    (x >= GRID_WIDTH && y !== TUNNEL_ROW)
-  ) {
-    return false;
-  }
+  const row = maze[y];
+  if (!row?.length) return false;
+  if (x >= 0 && x < row.length) return row[x] !== 1;
+  if (y !== TUNNEL_ROW) return false;
 
-  // Allow tunnel movement
-  if (y === TUNNEL_ROW && (x < 0 || x >= GRID_WIDTH)) {
-    return true;
-  }
-
-  // Check if cell is not a wall
-  return maze[y] && maze[y][x] !== 1;
+  const wrappedX = (x + row.length) % row.length;
+  return row[wrappedX] !== undefined && row[wrappedX] !== 1;
 };
 
 /**
@@ -41,19 +31,12 @@ export const canMove = (x, y, maze) => {
  * @returns {Object|null} The rat that collided with player, or null if no collision
  */
 export const checkPlayerRatCollision = (player, rats) => {
-  const playerGridX = Math.round(player.x);
-  const playerGridY = Math.round(player.y);
-
+  const contactRadius = 0.65;
   for (const rat of rats) {
-    const ratGridX = Math.round(rat.x);
-    const ratGridY = Math.round(rat.y);
-    const distance = Math.sqrt(
-      Math.pow(playerGridX - ratGridX, 2) + Math.pow(playerGridY - ratGridY, 2)
-    );
-
-    if (distance < 1) {
-      return rat;
-    }
+    if (rat.mode === 'waiting' || rat.mode === 'leaving') continue;
+    let dx = Math.abs(player.x - rat.x);
+    if (player.y === TUNNEL_ROW && rat.y === TUNNEL_ROW) dx = Math.min(dx, GRID_WIDTH - dx);
+    if (Math.hypot(dx, player.y - rat.y) < contactRadius) return rat;
   }
 
   return null;

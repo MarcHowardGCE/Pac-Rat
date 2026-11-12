@@ -13,7 +13,10 @@ export class AudioManager {
     this.audioContext = null;
     this.musicLoopTimeout = null;
     this.backgroundMusicPlaying = false;
+    this.musicNoteTimeouts = new Set();
     this.enabled = true;
+    this.musicEnabled = true;
+    this.effectsEnabled = true;
   }
 
   /**
@@ -21,20 +24,27 @@ export class AudioManager {
    * Must be called after user interaction due to browser autoplay policies
    */
   initialize() {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+
+    try {
+      this.audioContext ??= new AudioContext();
+      if (this.audioContext.state === 'suspended' || this.audioContext.state === 'interrupted') {
+        this.audioContext.resume().catch(() => {});
+      }
+    } catch {
+      // Audio is optional when the browser cannot create or resume a context.
     }
   }
 
   /**
-   * Set whether audio is enabled
-   * @param {boolean} enabled - Whether audio should be enabled
+   * Set the master, music, and effects preferences
    */
-  setEnabled(enabled) {
-    this.enabled = enabled;
-    if (!enabled) {
-      this.stopBackgroundMusic();
-    }
+  setMix({ sound, music, effects }) {
+    this.enabled = sound;
+    this.musicEnabled = music;
+    this.effectsEnabled = effects;
+    if (!sound || !music) this.stopBackgroundMusic();
   }
 
   /**
@@ -44,8 +54,9 @@ export class AudioManager {
    * @param {string} type - Oscillator type (sine, square, triangle, sawtooth)
    * @param {number} volume - Volume level (0-1)
    */
-  playSound(frequency, duration, type = 'sine', volume = 0.3) {
-    if (!this.enabled || !this.audioContext) return;
+  playSound(frequency, duration, type = 'sine', volume = 0.3, delay = 0, channel = 'effects') {
+    const channelEnabled = channel === 'music' ? this.musicEnabled : this.effectsEnabled;
+    if (!this.enabled || !channelEnabled || !this.audioContext) return;
 
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
@@ -57,8 +68,9 @@ export class AudioManager {
     oscillator.type = type;
     gainNode.gain.value = volume;
 
-    oscillator.start(this.audioContext.currentTime);
-    oscillator.stop(this.audioContext.currentTime + duration);
+    const start = this.audioContext.currentTime + delay;
+    oscillator.start(start);
+    oscillator.stop(start + duration);
   }
 
   /**
@@ -72,7 +84,7 @@ export class AudioManager {
    * Play the power-up collection sound
    */
   playPowerUpSound() {
-    if (!this.enabled || !this.audioContext) return;
+    if (!this.enabled || !this.effectsEnabled || !this.audioContext) return;
 
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
@@ -98,7 +110,7 @@ export class AudioManager {
    * Play the rat eating sound
    */
   playEatRatSound() {
-    if (!this.enabled || !this.audioContext) return;
+    if (!this.enabled || !this.effectsEnabled || !this.audioContext) return;
 
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
@@ -123,7 +135,7 @@ export class AudioManager {
    * Play the death sound
    */
   playDeathSound() {
-    if (!this.enabled || !this.audioContext) return;
+    if (!this.enabled || !this.effectsEnabled || !this.audioContext) return;
 
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
@@ -149,7 +161,7 @@ export class AudioManager {
    * Play the candy collection sound (happy jingle)
    */
   playCandySound() {
-    if (!this.enabled || !this.audioContext) return;
+    if (!this.enabled || !this.effectsEnabled || !this.audioContext) return;
 
     // Play a happy jingle - C E G C
     const notes = [523, 659, 784, 1047];
@@ -158,11 +170,17 @@ export class AudioManager {
     });
   }
 
+  playLevelClearSound() {
+    [440, 554, 659].forEach((frequency, index) => {
+      this.playSound(frequency, 0.14, 'triangle', 0.12, index * 0.1);
+    });
+  }
+
   /**
    * Start playing background music
    */
   playBackgroundMusic() {
-    if (!this.enabled || !this.audioContext) return;
+    if (!this.enabled || !this.musicEnabled || !this.audioContext || this.backgroundMusicPlaying) return;
 
     this.backgroundMusicPlaying = true;
     this.playMusicLoop();
@@ -173,7 +191,7 @@ export class AudioManager {
    * Arizona ferret-themed adventure melody
    */
   playMusicLoop() {
-    if (!this.enabled || !this.backgroundMusicPlaying) {
+    if (!this.enabled || !this.musicEnabled || !this.backgroundMusicPlaying) {
       this.backgroundMusicPlaying = false;
       if (this.musicLoopTimeout) {
         clearTimeout(this.musicLoopTimeout);
@@ -224,13 +242,15 @@ export class AudioManager {
 
     let time = 0;
     melody.forEach((note) => {
-      setTimeout(() => {
-        if (this.backgroundMusicPlaying && this.enabled) {
+      const noteTimeout = setTimeout(() => {
+        this.musicNoteTimeouts.delete(noteTimeout);
+        if (this.backgroundMusicPlaying && this.enabled && this.musicEnabled) {
           // Vary the waveform for more interest
           const waveform = note.freq > 800 ? 'triangle' : 'square';
-          this.playSound(note.freq, note.dur, waveform, 0.06);
+          this.playSound(note.freq, note.dur, waveform, 0.06, 0, 'music');
         }
       }, time * 1000);
+      this.musicNoteTimeouts.add(noteTimeout);
       time += note.dur;
     });
 
@@ -247,6 +267,8 @@ export class AudioManager {
       clearTimeout(this.musicLoopTimeout);
       this.musicLoopTimeout = null;
     }
+    this.musicNoteTimeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    this.musicNoteTimeouts.clear();
   }
 
   /**
@@ -255,7 +277,7 @@ export class AudioManager {
   cleanup() {
     this.stopBackgroundMusic();
     if (this.audioContext) {
-      this.audioContext.close();
+      this.audioContext.close?.();
       this.audioContext = null;
     }
   }

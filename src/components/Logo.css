@@ -1,19 +1,38 @@
-.logo-container {
-  margin-bottom: 10px;
-  padding: 10px;
-  background: rgba(61, 33, 13, 0.8);
-  border-radius: 10px;
-  border: 2px solid #d4a574;
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--arcade-gold);
+  font: 900 1em / 0.98 var(--arcade-display);
+  letter-spacing: -0.055em;
+  text-shadow: 0.025em 0.05em #ac5658, 0.055em 0.088em var(--arcade-ink);
+  white-space: nowrap;
 }
 
-.game-logo {
-  width: 350px;
-  height: auto;
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+.wordmark-pac {
+  display: inline-block;
+  transform: skew(-6deg) rotate(-3deg);
 }
 
-@media (max-width: 768px) {
-  .game-logo {
-    width: 280px;
-  }
+.wordmark-dash {
+  padding-inline: 0.06em;
+  color: var(--arcade-coral);
+}
+
+.wordmark-rat {
+  display: inline-block;
+  transform: skew(4deg) rotate(3deg);
+}
+
+.game-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 44px;
+  font-size: 1.55rem;
+}
+
+.game-brand img {
+  width: 42px;
+  height: 42px;
 }

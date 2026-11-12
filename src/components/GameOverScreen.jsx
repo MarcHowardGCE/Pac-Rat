@@ -1,39 +1,22 @@
-/**
- * GameOverScreen Component
- * 
- * Displays the game over screen with:
- * - Game over title
- * - Final score
- * - High score
- * - Restart button
- */
-
 import React from 'react';
-import './StartScreen.css'; // Reuse the same styles
+import ferret from '../assets/ferret/ferret_idle_right.png';
+import pellet from '../assets/pickups/pellet.png';
+import './StartScreen.css';
+import './RoundScreen.css';
 
-/**
- * GameOverScreen component
- * @param {Object} props - Component props
- * @param {number} props.score - Final game score
- * @param {number} props.highScore - Current high score
- * @param {Function} props.onRestart - Callback when restart button is clicked
- * @returns {JSX.Element} The game over screen component
- */
-export const GameOverScreen = ({ score, highScore, onRestart }) => {
-  return (
-    <div className="screen">
-      <h1>GAME OVER</h1>
-      <div className="final-score">
-        <p>
-          Your Score: <span className="score-value">{score}</span>
-        </p>
-        <p>
-          High Score: <span className="score-value">{highScore}</span>
-        </p>
-      </div>
-      <button className="game-button" onClick={onRestart}>
-        PLAY AGAIN
-      </button>
+export const GameOverScreen = ({ score, highScore, level, onRestart }) => (
+  <section className="screen round-screen game-over-screen" aria-labelledby="game-over-title">
+    <div className="round-art game-over-art" aria-hidden="true">
+      <img className="game-over-spark" src={pellet} alt="" width="16" height="16" />
+      <img className="game-over-ferret" src={ferret} alt="" width="92" height="92" />
+      <img className="game-over-spark" src={pellet} alt="" width="12" height="12" />
     </div>
-  );
-};
+    <h1 id="game-over-title">Game over</h1>
+    <dl className="round-stats game-over-stats">
+      <div className="final-run-score"><dt>Final score</dt><dd>{score}</dd></div>
+      <div><dt>High score</dt><dd>{highScore}</dd></div>
+      <div><dt>Level reached</dt><dd>{level}</dd></div>
+    </dl>
+    <button className="game-button" autoFocus onClick={onRestart}>Play again</button>
+  </section>
+);

@@ -1,9 +1,10 @@
 .game-canvas {
-  border: 4px solid #5d4037;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  background: #2d1b0e;
-  max-width: 100%;
+  display: block;
+  width: 100%;
   height: auto;
-  touch-action: none; /* Prevent default touch behaviors */
+  border: 3px solid #8b6158;
+  border-radius: 12px 9px 13px 9px;
+  box-shadow: 0 0 0 1px var(--arcade-ink), 0 12px 36px #180f19b0;
+  background: #2d1b0e;
+  touch-action: none;
 }
