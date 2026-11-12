@@ -178,6 +178,14 @@ export const useRats = (maze, player) => {
                 // Chase player
                 newDirection = getChaseDirection(rat, possibleDirections, player);
               }
+            } else {
+              // At a dead end, reverse if the cell behind the rat is open.
+              const reverseDirection = { x: -rat.direction.x, y: -rat.direction.y };
+              if (canMove(gridX + reverseDirection.x, gridY + reverseDirection.y, maze)) {
+                newDirection = reverseDirection;
+              } else {
+                newDirection = { x: 0, y: 0 };
+              }
             }
           }
 
@@ -188,9 +196,16 @@ export const useRats = (maze, player) => {
           let newX = rat.x + newDirection.x * speed * movementScale;
           let newY = rat.y + newDirection.y * speed * movementScale;
 
-          // Handle tunnel wrapping
+          // Handle tunnel wrapping before checking the destination cell.
           if (newX < 0) newX = GRID_WIDTH - 1;
           if (newX >= GRID_WIDTH) newX = 0;
+
+          if (!canMove(Math.round(newX), Math.round(newY), maze)) {
+            // Stop at the current tile rather than advancing into a wall.
+            newX = gridX;
+            newY = gridY;
+            newDirection = { x: 0, y: 0 };
+          }
 
           return {
             ...rat,
