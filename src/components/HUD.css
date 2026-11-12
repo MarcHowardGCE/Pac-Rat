@@ -52,3 +52,30 @@
     font-size: 1em;
   }
 }
+
+
+.pause-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 10px 16px;
+  color: #ffd54f;
+  background: rgba(61, 33, 13, 0.8);
+  border: 2px solid #d4a574;
+  border-radius: 25px;
+  font: inherit;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.pause-toggle:hover,
+.pause-toggle:focus-visible {
+  background: rgba(61, 33, 13, 0.98);
+}
+
+.pause-toggle:focus-visible {
+  outline: 3px solid #fff2c2;
+  outline-offset: 3px;
+}
