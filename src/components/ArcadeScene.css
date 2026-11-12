@@ -49,6 +49,15 @@
   clip-path: polygon(0 64%, 33% 53%, 58% 60%, 100% 45%, 78% 87%, 33% 100%);
 }
 
+.arcade-cactus-pad {
+  aspect-ratio: 0.7;
+  background: radial-gradient(ellipse at 34% 38%, #b5a775 0 4%, transparent 6%),
+    radial-gradient(ellipse at 66% 65%, #b5a775 0 4%, transparent 6%), #777747;
+  border: 2px solid #332833;
+  border-radius: 61% 39% 49% 51% / 55% 52% 48% 45%;
+  box-shadow: inset -4px -3px #555638;
+}
+
 .arcade-scene-skip {
   position: relative;
   margin: 0;

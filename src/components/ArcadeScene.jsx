@@ -116,7 +116,7 @@ const SALTY_SNACK = {
   title: 'Salty Snack (After Level 3)',
   duration: 5100,
   tracks: [
-    { name: 'salt-shard', width: 10, frames: [
+    { name: 'salt-shard', propClass: 'arcade-salt-shard', width: 10, frames: [
       [0, 43, 57, 'still'], [1610, 43, 57, 'still'], [1740, 42, 55],
       [2400, 45, 51, 'still', 0.8, 45], [2740, 50, 58, 'still', 0.85, 135],
       [4600, 50, 58, 'still', 0.85, 135],
@@ -138,12 +138,46 @@ const SALTY_SNACK = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK];
+const CACTUS_HITCHHIKER = {
+  id: 'cactus-hitchhiker',
+  title: 'Cactus Hitchhiker (After Level 4)',
+  duration: 5300,
+  tracks: [
+    { name: 'cactus-stem', propClass: 'arcade-cactus-pad', width: 9, frames: [
+      [0, 46, 60, 'still', 1, 12],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 31, frames: [
+      [0, -18, 55, 'right'], [770, 33, 55, 'right'],
+      [990, 45, 59, 'right', 0.8, 6], [1220, 57, 55, 'right'],
+      [2030, 116, 55],
+    ] },
+    { name: 'coral', sprites: coral, width: 30, frames: [
+      [1060, -16, 55, 'right'], [2080, 58, 55, 'right'],
+      [2480, 71, 55, 'idleRight'], [2830, 70, 55, 'idleLeft'],
+      [3810, 70, 55, 'idleLeft'], [4000, 73, 48, 'idleRight', 1.08, -12],
+      [4260, 73, 55, 'right'], [5000, 120, 55],
+    ] },
+    { name: 'cactus-pad', propClass: 'arcade-cactus-pad', width: 8, frames: [
+      [0, 44, 49, 'still', 1, -35], [1930, 44, 49, 'still', 1, -35],
+      [2080, 48, 53, 'still', 1, -22], [2480, 61, 53, 'still', 1, -22],
+      [2830, 80, 53, 'still', 1, 24], [3810, 80, 53, 'still', 1, 24],
+      [4000, 63, 46, 'still', 1, -45], [4260, 63, 53, 'still', 1, -22],
+      [5000, 110, 53],
+    ] },
+    { name: 'bubblegum', sprites: bubblegum, width: 27, frames: [
+      [2210, -16, 55, 'right'], [3140, 43, 55, 'right'],
+      [3400, 40, 51, 'right', 1.06, -12], [3650, 35, 55, 'right'],
+      [3810, 31, 55, 'right'], [4490, -16, 55],
+    ] },
+  ],
+};
+
+const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];
 
 function StageActor({ track, elapsed }) {
-  const { frames, sprites, width, name } = track;
+  const { frames, sprites, width, name, propClass } = track;
   const nextIndex = frames.findIndex(([time]) => time > elapsed);
   const index = nextIndex === -1 ? frames.length - 1 : nextIndex - 1;
   if (index < 0) return null;
@@ -159,7 +193,7 @@ function StageActor({ track, elapsed }) {
     width: `${width}%`,
     transform: `translate(-50%, -50%) rotate(${lerp(angle, nextAngle)}deg) scale(${lerp(scale, nextScale)})`,
   };
-  if (!sprites) return <span className="arcade-scene-actor arcade-salt-shard" data-actor={name} style={style} />;
+  if (propClass) return <span className={`arcade-scene-actor ${propClass}`} data-actor={name} style={style} />;
 
   const image = sprites[pose];
   const src = Array.isArray(image) ? image[Math.floor((elapsed - start) / 110) % image.length] : image;
