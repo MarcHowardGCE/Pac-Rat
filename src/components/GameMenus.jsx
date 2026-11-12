@@ -1,5 +1,6 @@
 import React from 'react';
 import { MenuDialog } from './MenuDialog.jsx';
+import { AVAILABLE_LEVELS } from '../utils/mazeData.js';
 
 const preferenceLabels = [
   ['sound', 'Sound', 'Mute or unmute all audio.'],
@@ -29,6 +30,15 @@ export const HowToPlay = ({ onBack }) => (
 export const SettingsMenu = ({ settings, onBack }) => (
   <MenuDialog title="Settings" actions={<BackButton onBack={onBack} />}>
     <div className="settings-list">
+      <label className="setting-row">
+        <span>Starting level<small>Applies to your next run.</small></span>
+        <select
+          value={settings.startingLevel}
+          onChange={(event) => settings.setPreference('startingLevel', event.target.value)}
+        >
+          {AVAILABLE_LEVELS.map((level) => <option key={level} value={level}>Level {level}</option>)}
+        </select>
+      </label>
       {preferenceLabels.map(([name, label, help]) => (
         <label key={name} className="setting-row">
           <span>{label}<small>{help}</small></span>

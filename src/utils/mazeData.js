@@ -83,5 +83,6 @@ const LEVEL_TWO = [
 
 const layouts = [MAZE_LAYOUT, LEVEL_TWO];
 
+export const AVAILABLE_LEVELS = layouts.map((_, index) => index + 1);
 export const getMazeLayout = (level) => layouts[(level - 1) % layouts.length];
 export const getInitialMaze = (level = 1) => getMazeLayout(level).map((row) => [...row]);

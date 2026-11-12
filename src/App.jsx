@@ -111,7 +111,7 @@ function App() {
   }, []);
 
   const settings = useSettings();
-  const { sound, music, effects: soundEffects, reducedMotion, highContrast, setPreference } = settings;
+  const { sound, music, effects: soundEffects, reducedMotion, highContrast, startingLevel, setPreference } = settings;
   const [menu, setMenu] = useState('main');
   const menuOrigin = useRef(null);
 
@@ -156,13 +156,13 @@ function App() {
   const handleStartGame = useCallback(() => {
     audioManager.initialize();
     resetGameSession();
-    if (reducedMotion) {
+    if (reducedMotion || startingLevel !== 1) {
       setRoundCue('ready', LEVEL_READY_MS);
     } else {
       setRoundCue('intro', OPENING_SCENE.duration, OPENING_SCENE);
     }
-    startGameState();
-  }, [reducedMotion, resetGameSession, setRoundCue, startGameState]);
+    startGameState(startingLevel);
+  }, [reducedMotion, resetGameSession, setRoundCue, startGameState, startingLevel]);
 
   const handleReturnToTitle = useCallback(() => {
     resetGameSession();

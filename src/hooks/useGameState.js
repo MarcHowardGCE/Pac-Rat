@@ -40,15 +40,15 @@ export const useGameState = () => {
   /**
    * Start a new game
    */
-  const resetRun = useCallback((state) => {
+  const resetRun = useCallback((state, startingLevel = 1) => {
     setGameState(state);
     setScore(0);
     setLives(PLAYER_CONFIG.INITIAL_LIVES);
-    setLevel(1);
-    replaceMaze(getInitialMaze());
+    setLevel(startingLevel);
+    replaceMaze(getInitialMaze(startingLevel));
   }, [replaceMaze]);
 
-  const startGame = useCallback(() => resetRun('playing'), [resetRun]);
+  const startGame = useCallback((startingLevel) => resetRun('playing', startingLevel), [resetRun]);
   const returnToTitle = useCallback(() => resetRun('start'), [resetRun]);
 
   const pauseGame = useCallback(() => {
