@@ -63,16 +63,17 @@ export const useGameState = () => {
    * Reset current level
    */
   const resetLevel = useCallback(() => {
-    replaceMaze(getInitialMaze());
-  }, [replaceMaze]);
+    replaceMaze(getInitialMaze(level));
+  }, [level, replaceMaze]);
 
   /**
    * Advance to next level
    */
   const nextLevel = useCallback(() => {
-    setLevel((prev) => prev + 1);
-    replaceMaze(getInitialMaze());
-  }, [replaceMaze]);
+    const upcomingLevel = level + 1;
+    setLevel(upcomingLevel);
+    replaceMaze(getInitialMaze(upcomingLevel));
+  }, [level, replaceMaze]);
 
   /**
    * Add points to score
