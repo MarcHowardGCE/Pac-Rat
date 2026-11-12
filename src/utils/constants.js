@@ -12,6 +12,8 @@ export const TILE_SIZE = 20;
 export const GRID_WIDTH = 28;
 export const GRID_HEIGHT = 31;
 export const TUNNEL_ROW = 14; // Row where horizontal tunnel wrapping occurs
+export const REFERENCE_FRAME_MS = 1000 / 60;
+export const MAX_MOVEMENT_DELTA_MS = 50;
 
 /**
  * Animation and timing constants
