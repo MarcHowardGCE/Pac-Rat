@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArcadeStage, ARCADE_SCENES } from './ArcadeScene.jsx';
 import { MenuDialog } from './MenuDialog.jsx';
 import { MAX_MOVEMENT_DELTA_MS } from '../utils/constants.js';
+import { audioManager } from '../utils/audio.js';
+import { playCutsceneCues } from '../utils/cutsceneAudio.js';
 
 export function CutsceneViewer({ onBack }) {
   const [scene, setScene] = useState(ARCADE_SCENES[0]);
@@ -17,7 +19,9 @@ export function CutsceneViewer({ onBack }) {
     function advance(timestamp) {
       const delta = lastTimestamp === null ? 0 : Math.min(timestamp - lastTimestamp, MAX_MOVEMENT_DELTA_MS);
       lastTimestamp = timestamp;
-      position.current = Math.min(position.current + delta, scene.duration);
+      const previousTime = position.current;
+      position.current = Math.min(previousTime + delta, scene.duration);
+      playCutsceneCues(scene, previousTime, position.current);
       setElapsed(position.current);
       if (position.current < scene.duration) {
         frame = requestAnimationFrame(advance);
@@ -27,10 +31,20 @@ export function CutsceneViewer({ onBack }) {
     }
 
     frame = requestAnimationFrame(advance);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, scene.duration]);
+    function pauseWhenHidden() {
+      if (document.visibilityState === 'hidden') setPlaying(false);
+    }
+    document.addEventListener('visibilitychange', pauseWhenHidden);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener('visibilitychange', pauseWhenHidden);
+      audioManager.stopCutsceneEffects();
+    };
+  }, [playing, scene]);
 
   function resetPlayback(play) {
+    audioManager.stopCutsceneEffects();
+    if (play) audioManager.initialize();
     position.current = 0;
     setElapsed(0);
     setPlaying(play);
@@ -45,6 +59,7 @@ export function CutsceneViewer({ onBack }) {
     if (position.current >= scene.duration) {
       resetPlayback(true);
     } else {
+      if (!playing) audioManager.initialize();
       setPlaying(!playing);
     }
   }

@@ -23,6 +23,7 @@ import { usePlayer } from './hooks/usePlayer.js';
 import { useRats } from './hooks/useRats.js';
 import { useInput } from './hooks/useInput.js';
 import { audioManager } from './utils/audio.js';
+import { playCutsceneCues } from './utils/cutsceneAudio.js';
 import { checkPlayerRatCollision, checkCandyCollision } from './utils/collision.js';
 import {
   CANDY_SPAWN_INTERVAL,
@@ -154,6 +155,7 @@ function App() {
   }, [setPreference, sound]);
 
   const resetGameSession = useCallback(() => {
+    audioManager.stopCutsceneEffects();
     roundEndedRef.current = false;
     menuOrigin.current = null;
     restoreViewerFocus.current = false;
@@ -184,6 +186,7 @@ function App() {
 
   const togglePause = useCallback(() => {
     if (gameState === 'playing') {
+      audioManager.stopCutsceneEffects();
       pauseGame();
     } else if (gameState === 'paused' && menu === 'main') {
       audioManager.initialize();
@@ -230,6 +233,7 @@ function App() {
   const finishScene = useCallback(() => {
     const cue = roundCueRef.current;
     if (gameState !== 'playing' || !cue?.scene) return;
+    audioManager.stopCutsceneEffects();
     if (document.activeElement?.id === 'arcade-scene-skip') {
       document.getElementById('hud-pause')?.focus({ preventScroll: true });
     }
@@ -273,6 +277,7 @@ function App() {
     if (cue) {
       if (cue.scene) {
         if (reducedMotion || now >= cue.deadline) finishScene();
+        else playCutsceneCues(cue.scene, now - deltaTime - cue.startedAt, now - cue.startedAt);
       } else if (now >= cue.deadline) {
         if (cue.kind === 'clear') {
           const scene = !reducedMotion && intermissionAfter(level);
@@ -391,6 +396,7 @@ function App() {
     function interruptPlay() {
       cancelAnimationFrame(frameId);
       audioManager.stopBackgroundMusic();
+      audioManager.stopCutsceneEffects();
       clearPendingTurn();
       pauseGame();
     }
