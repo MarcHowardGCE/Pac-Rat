@@ -172,7 +172,35 @@ const CACTUS_HITCHHIKER = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER];
+const CAP_TRAP = {
+  id: 'cap-trap',
+  title: 'Cap Trap (After Level 5)',
+  duration: 5500,
+  tracks: [
+    { name: 'coral', sprites: coral, width: 28, frames: [
+      [190, -16, 55, 'right'], [1040, 36, 55, 'idleRight'],
+      [1410, 36, 55, 'idleRight'], [1600, 36, 60, 'right', 0.7],
+      [2050, 38, 60, 'right', 0.7], [2990, 68, 60, 'right', 0.7],
+      [3490, 68, 60, 'left', 0.7], [4380, 11, 60, 'left', 0.7], [4790, -15, 60],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 31, frames: [
+      [1030, 115, 55, 'left'], [1950, 58, 55, 'idleLeft'],
+      [2250, 58, 55, 'right'], [2900, 85, 55, 'idleLeft'],
+      [3170, 81, 55, 'idleLeft'], [3370, 78, 54, 'idleLeft', 1, -7],
+      [3550, 84, 55, 'idleLeft'], [4420, 84, 55, 'right'], [5070, 117, 55],
+    ] },
+    { name: 'bottlecap', propClass: 'arcade-bottlecap', width: 22, frames: [
+      [1060, 36, -10, 'still', 1, 30], [1540, 36, 53, 'still'],
+      [1670, 36, 50, 'still', 1, -10], [1830, 36, 53, 'still'],
+      [2050, 38, 53, 'still', 1, 6], [2480, 51, 53, 'still', 1, -7],
+      [2990, 68, 53, 'still'], [3370, 68, 53, 'still'],
+      [3490, 68, 53, 'still', 1, -40], [4380, 11, 53, 'still', 1, -720],
+      [4790, -15, 53],
+    ] },
+  ],
+};
+
+const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];
 

@@ -7,6 +7,8 @@ import nurseryBackdrop from '../assets/maze/crooked-cactus-nursery/backdrop.webp
 import nurseryWall from '../assets/maze/crooked-cactus-nursery/wall.webp';
 import gulchBackdrop from '../assets/maze/bottlecap-gulch/backdrop.webp';
 import gulchWall from '../assets/maze/bottlecap-gulch/wall.webp';
+import depotBackdrop from '../assets/maze/tin-whistle-depot/backdrop.webp';
+import depotWall from '../assets/maze/tin-whistle-depot/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -34,6 +36,11 @@ const themes = new Map([
     id: 'bottlecap-gulch', backdrop: gulchBackdrop, material: gulchWall, rounded: false,
     floor: '#291c23', wall: '#603d3b', ink: '#281c24', edge: '#9e6c55',
     den: '#482d32', denRim: '#94644d', textureAlpha: 0.66,
+  }],
+  [getMazeLayout(6), {
+    id: 'tin-whistle-depot', backdrop: depotBackdrop, material: depotWall, rounded: false,
+    floor: '#211d2a', wall: '#464a51', ink: '#1c1923', edge: '#989487',
+    den: '#39313a', denRim: '#777168', textureAlpha: 0.74,
   }],
 ]);
 
@@ -105,6 +112,16 @@ function drawDen(ctx, theme) {
   ctx.fill();
   ctx.stroke();
 
+  if (theme.id === 'tin-whistle-depot') {
+    ctx.beginPath();
+    for (const offset of [14, 23]) {
+      ctx.moveTo(left + 13, top + height - offset);
+      ctx.lineTo(left + width - 13, top + height - offset);
+    }
+    ctx.stroke();
+    return;
+  }
+
   if (theme.id === 'crooked-cactus-nursery') {
     ctx.beginPath();
     ctx.moveTo(left + width * 0.67, top + height - 6);
@@ -143,7 +160,11 @@ function drawTunnelMouths(ctx, theme) {
     for (const bank of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(0, bank * (wallOffset + 12));
-      if (theme.id === 'bottlecap-gulch') {
+      if (theme.id === 'tin-whistle-depot') {
+        ctx.lineTo(24, bank * (wallOffset + 12));
+        ctx.lineTo(24, bank * wallOffset);
+        ctx.lineTo(39, bank * wallOffset);
+      } else if (theme.id === 'bottlecap-gulch') {
         ctx.quadraticCurveTo(14, bank * (wallOffset + 13), 26, bank * wallOffset);
         ctx.lineTo(38, bank * wallOffset);
       } else if (theme.rounded) {
