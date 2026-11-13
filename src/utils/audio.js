@@ -14,6 +14,7 @@ export class AudioManager {
     this.musicLoopTimeout = null;
     this.backgroundMusicPlaying = false;
     this.musicNoteTimeouts = new Set();
+    this.cutsceneVoices = new Set();
     this.enabled = true;
     this.musicEnabled = true;
     this.effectsEnabled = true;
@@ -45,6 +46,7 @@ export class AudioManager {
     this.musicEnabled = music;
     this.effectsEnabled = effects;
     if (!sound || !music) this.stopBackgroundMusic();
+    if (!sound || !effects) this.stopCutsceneEffects();
   }
 
   /**
@@ -71,6 +73,45 @@ export class AudioManager {
     const start = this.audioContext.currentTime + delay;
     oscillator.start(start);
     oscillator.stop(start + duration);
+  }
+
+  playCutsceneEffect(notes) {
+    const context = this.audioContext;
+    if (!this.enabled || !this.effectsEnabled || context?.state !== 'running') return;
+
+    const now = context.currentTime;
+    for (const [pitch, endPitch, duration, type, volume, delay = 0] of notes) {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = now + delay;
+      const end = start + duration;
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(pitch, start);
+      oscillator.frequency.exponentialRampToValueAtTime(endPitch, end);
+      gain.gain.setValueAtTime(0.001, start);
+      gain.gain.linearRampToValueAtTime(volume, start + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.001, end);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      const voice = { oscillator, gain };
+      this.cutsceneVoices.add(voice);
+      oscillator.onended = () => {
+        this.cutsceneVoices.delete(voice);
+        oscillator.disconnect();
+        gain.disconnect();
+      };
+      oscillator.start(start);
+      oscillator.stop(end);
+    }
+  }
+
+  stopCutsceneEffects() {
+    for (const { oscillator, gain } of this.cutsceneVoices) {
+      gain.disconnect();
+      oscillator.stop();
+    }
+    this.cutsceneVoices.clear();
   }
 
   /**
@@ -276,6 +317,7 @@ export class AudioManager {
    */
   cleanup() {
     this.stopBackgroundMusic();
+    this.stopCutsceneEffects();
     if (this.audioContext) {
       this.audioContext.close?.();
       this.audioContext = null;

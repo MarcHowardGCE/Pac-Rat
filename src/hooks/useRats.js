@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { RAT_CONFIGS } from '../utils/constants.js';
 import { advanceRat, initializeRat, initializeRats } from '../utils/ratMovement.js';
 
-export function useRats(maze) {
+export function useRats(maze, layout) {
   const [rats, setRatState] = useState(initializeRats);
   const ratsRef = useRef(rats);
 
@@ -19,8 +19,8 @@ export function useRats(maze) {
   }, [setRats]);
 
   const updateRats = useCallback((deltaTime, player) => (
-    setRats((current) => current.map((rat) => advanceRat(rat, maze, deltaTime, player)))
-  ), [maze, setRats]);
+    setRats((current) => current.map((rat) => advanceRat(rat, maze, deltaTime, player, layout)))
+  ), [maze, layout, setRats]);
 
   return { rats, resetRats, resetRat, updateRats };
 }

@@ -2,7 +2,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border: 3px solid #8b6158;
+  border: 3px solid var(--maze-edge, #8b6158);
   border-radius: 12px 9px 13px 9px;
   box-shadow: 0 0 0 1px var(--arcade-ink), 0 12px 36px #180f19b0;
   background: #2d1b0e;

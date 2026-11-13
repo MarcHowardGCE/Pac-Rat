@@ -1,4 +1,4 @@
-import { TUNNEL_ROW } from './constants.js';
+import { GRID_WIDTH, TUNNEL_ROW } from './constants.js';
 import { canTravel } from './gridMovement.js';
 import { MAZE_LAYOUT } from './mazeData.js';
 
@@ -10,22 +10,23 @@ export const DIRECTIONS = [
 ];
 
 export function mazeTile(x, y) {
-  const width = MAZE_LAYOUT[y].length;
-  return { x: y === TUNNEL_ROW ? (x + width) % width : x, y };
+  return { x: y === TUNNEL_ROW ? (x + GRID_WIDTH) % GRID_WIDTH : x, y };
 }
 
 export function mazeNeighbor(x, y, direction) {
   return mazeTile(x + direction.x, y + direction.y);
 }
 
-// Collectibles change during play, but all runs and levels share this maze geometry.
-const distanceFields = new Map();
+// Use the level's original layout so collecting a dot doesn't invalidate paths.
+const fieldsByLayout = new WeakMap();
 
-export function mazeDistancesFrom({ x, y }) {
-  const key = y * MAZE_LAYOUT[0].length + x;
+export function mazeDistancesFrom({ x, y }, layout = MAZE_LAYOUT) {
+  if (!fieldsByLayout.has(layout)) fieldsByLayout.set(layout, new Map());
+  const distanceFields = fieldsByLayout.get(layout);
+  const key = y * GRID_WIDTH + x;
   if (distanceFields.has(key)) return distanceFields.get(key);
 
-  const distances = MAZE_LAYOUT.map((row) => row.map(() => Infinity));
+  const distances = layout.map((row) => row.map(() => Infinity));
   const pending = [{ x, y }];
   distances[y][x] = 0;
 
@@ -33,7 +34,7 @@ export function mazeDistancesFrom({ x, y }) {
     const current = pending[index];
     const nextDistance = distances[current.y][current.x] + 1;
     for (const direction of DIRECTIONS) {
-      if (!canTravel(current.x, current.y, direction, MAZE_LAYOUT)) continue;
+      if (!canTravel(current.x, current.y, direction, layout)) continue;
       const next = mazeNeighbor(current.x, current.y, direction);
       if (distances[next.y][next.x] !== Infinity) continue;
       distances[next.y][next.x] = nextDistance;

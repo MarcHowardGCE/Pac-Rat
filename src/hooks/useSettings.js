@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { STORAGE_KEYS } from '../utils/constants.js';
+import { AVAILABLE_LEVELS } from '../utils/mazeData.js';
 import { readStored, writeStored } from '../utils/storage.js';
 
 const PREFERENCES = {
@@ -8,7 +9,13 @@ const PREFERENCES = {
   effects: 'pacRatEffects',
   reducedMotion: 'pacRatReducedMotion',
   highContrast: 'pacRatHighContrast',
+  startingLevel: 'pacRatStartingLevel',
 };
+
+function readStartingLevel(value) {
+  const level = Number(value);
+  return AVAILABLE_LEVELS.includes(level) ? level : 1;
+}
 
 function readBoolean(key, fallback) {
   const stored = readStored(key);
@@ -24,6 +31,7 @@ export function useSettings() {
     effects: readBoolean(PREFERENCES.effects, true),
     reducedMotion: readBoolean(PREFERENCES.reducedMotion, null),
     highContrast: readBoolean(PREFERENCES.highContrast, false),
+    startingLevel: readStartingLevel(readStored(PREFERENCES.startingLevel)),
   }));
   const [systemReducedMotion, setSystemReducedMotion] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -38,8 +46,9 @@ export function useSettings() {
 
   const setPreference = useCallback((name, value) => {
     if (!Object.hasOwn(PREFERENCES, name)) return;
-    writeStored(PREFERENCES[name], value);
-    setSettings((current) => ({ ...current, [name]: value }));
+    const preference = name === 'startingLevel' ? readStartingLevel(value) : value;
+    writeStored(PREFERENCES[name], preference);
+    setSettings((current) => ({ ...current, [name]: preference }));
   }, []);
 
   return { ...settings, reducedMotion: settings.reducedMotion ?? systemReducedMotion, setPreference };

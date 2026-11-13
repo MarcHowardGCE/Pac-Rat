@@ -19,7 +19,7 @@ import { readStored, writeStored } from '../utils/storage.js';
  */
 export const useGameState = () => {
   // Core game state
-  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'paused' | 'gameOver'
+  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'paused' | 'gameOver' | 'completed'
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(PLAYER_CONFIG.INITIAL_LIVES);
   const [level, setLevel] = useState(1);
@@ -40,15 +40,15 @@ export const useGameState = () => {
   /**
    * Start a new game
    */
-  const resetRun = useCallback((state) => {
+  const resetRun = useCallback((state, startingLevel = 1) => {
     setGameState(state);
     setScore(0);
     setLives(PLAYER_CONFIG.INITIAL_LIVES);
-    setLevel(1);
-    replaceMaze(getInitialMaze());
+    setLevel(startingLevel);
+    replaceMaze(getInitialMaze(startingLevel));
   }, [replaceMaze]);
 
-  const startGame = useCallback(() => resetRun('playing'), [resetRun]);
+  const startGame = useCallback((startingLevel) => resetRun('playing', startingLevel), [resetRun]);
   const returnToTitle = useCallback(() => resetRun('start'), [resetRun]);
 
   const pauseGame = useCallback(() => {
@@ -63,16 +63,17 @@ export const useGameState = () => {
    * Reset current level
    */
   const resetLevel = useCallback(() => {
-    replaceMaze(getInitialMaze());
-  }, [replaceMaze]);
+    replaceMaze(getInitialMaze(level));
+  }, [level, replaceMaze]);
 
   /**
    * Advance to next level
    */
   const nextLevel = useCallback(() => {
-    setLevel((prev) => prev + 1);
-    replaceMaze(getInitialMaze());
-  }, [replaceMaze]);
+    const upcomingLevel = level + 1;
+    setLevel(upcomingLevel);
+    replaceMaze(getInitialMaze(upcomingLevel));
+  }, [level, replaceMaze]);
 
   /**
    * Add points to score
@@ -100,8 +101,8 @@ export const useGameState = () => {
   /**
    * End the game
    */
-  const endGame = useCallback(() => {
-    setGameState('gameOver');
+  const endGame = useCallback((completed = false) => {
+    setGameState(completed ? 'completed' : 'gameOver');
     
     // Update high score if needed
     if (score > highScore) {

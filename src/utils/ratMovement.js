@@ -1,6 +1,5 @@
 import { RAT_CONFIGS, SPEED } from './constants.js';
 import { canTravel, moveOnGrid } from './gridMovement.js';
-import { MAZE_LAYOUT } from './mazeData.js';
 import { DIRECTIONS, mazeDistancesFrom, mazeNeighbor, mazeTile } from './mazeRouting.js';
 
 const EXIT_ROW = 11;
@@ -22,11 +21,11 @@ export function initializeRats() {
   return RAT_CONFIGS.map(initializeRat);
 }
 
-function chaseTarget(rat, player, playerTile, playerDistances, x, y) {
+function chaseTarget(rat, player, playerTile, playerDistances, x, y, layout) {
   if (rat.strategy === 'ambush') {
     let target = playerTile;
     for (let step = 0; step < AMBUSH_LOOKAHEAD; step++) {
-      if (!canTravel(target.x, target.y, player.direction, MAZE_LAYOUT)) break;
+      if (!canTravel(target.x, target.y, player.direction, layout)) break;
       target = mazeNeighbor(target.x, target.y, player.direction);
     }
     return target;
@@ -38,7 +37,7 @@ function chaseTarget(rat, player, playerTile, playerDistances, x, y) {
   return playerTile;
 }
 
-export function advanceRat(rat, maze, deltaMs, player) {
+export function advanceRat(rat, maze, deltaMs, player, layout = maze) {
   let { mode, exitTimer, patrolTarget } = rat;
   if (mode === 'waiting') {
     exitTimer += deltaMs;
@@ -74,13 +73,13 @@ export function advanceRat(rat, maze, deltaMs, player) {
 
     let target = { x: rat.exitX, y: EXIT_ROW };
     if (mode !== 'leaving') {
-      const playerDistances = mazeDistancesFrom(playerTile);
+      const playerDistances = mazeDistancesFrom(playerTile, layout);
       target = fieldMode === 'frightened'
         ? playerTile
-        : chaseTarget({ ...rat, patrolTarget }, player, playerTile, playerDistances, x, y);
+        : chaseTarget({ ...rat, patrolTarget }, player, playerTile, playerDistances, x, y, layout);
     }
 
-    const distances = mazeDistancesFrom(target);
+    const distances = mazeDistancesFrom(target, layout);
     const sign = mode !== 'leaving' && fieldMode === 'frightened' ? -1 : 1;
     let best = choices[0];
     let bestDistance = Infinity;

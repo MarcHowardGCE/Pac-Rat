@@ -71,7 +71,19 @@
   accent-color: var(--arcade-gold);
 }
 
-.setting-row input:focus-visible {
+.setting-row select {
+  flex: none;
+  min-height: 44px;
+  padding: 4px 8px;
+  color: var(--arcade-cream);
+  background: var(--arcade-panel);
+  border: 1px solid var(--arcade-border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.setting-row input:focus-visible,
+.setting-row select:focus-visible {
   outline: 2px solid var(--arcade-gold);
   outline-offset: 3px;
 }

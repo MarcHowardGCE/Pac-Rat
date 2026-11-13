@@ -8,7 +8,10 @@
   transform: translate(-50%, -50%);
   width: min(440px, calc(100% - 18px));
   max-height: calc(100% - 14px);
-  overflow: auto;
+  container-type: inline-size;
+  grid-template-columns: minmax(0, 1fr);
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: clamp(12px, 3vw, 28px);
   color: var(--arcade-cream);
   background: var(--arcade-panel);
@@ -34,7 +37,7 @@
 }
 
 .start-screen h1 {
-  font-size: clamp(2.8rem, 12vw, 5.25rem);
+  font-size: min(22cqi, 5.25rem);
   padding-block: 0.07em 0.12em;
   text-shadow: none;
 }
