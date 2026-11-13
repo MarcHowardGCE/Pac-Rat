@@ -121,6 +121,31 @@
   background: #19111c;
 }
 
+.arcade-fossil-jaw {
+  aspect-ratio: 3.9;
+  background: #bdab89;
+  clip-path: polygon(0 32%, 12% 14%, 55% 0, 89% 9%, 100% 45%, 93% 91%, 84% 64%, 75% 100%, 64% 70%, 53% 97%, 43% 70%, 33% 91%, 23% 67%, 14% 85%, 7% 61%);
+}
+
+.arcade-fossil-jaw::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: #82705d;
+  clip-path: polygon(0 32%, 29% 30%, 44% 16%, 64% 28%, 89% 9%, 100% 45%, 74% 41%, 54% 49%, 30% 43%, 12% 53%);
+}
+
+.arcade-fossil-jaw-lower {
+  scale: 1 -1;
+  background: #9e8d72;
+}
+
+.arcade-fossil-tooth {
+  aspect-ratio: 0.75;
+  background: #e7d6b0;
+  clip-path: polygon(7% 0, 96% 12%, 81% 57%, 56% 100%, 24% 66%);
+}
+
 .arcade-scene-skip {
   position: relative;
   margin: 0;

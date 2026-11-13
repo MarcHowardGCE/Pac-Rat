@@ -260,7 +260,44 @@ const VACANCY = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP, WRONG_PLATFORM, VACANCY];
+const LOOSE_TOOTH = {
+  id: 'loose-tooth',
+  title: 'Loose Tooth (After Level 8)',
+  duration: 5500,
+  tracks: [
+    { name: 'lower-jaw', propClass: 'arcade-fossil-jaw arcade-fossil-jaw-lower', width: 39, frames: [
+      [0, 67, 59, 'still', 1, -5], [2010, 67, 59, 'still', 1, -5],
+      [2190, 67, 54, 'still'], [2250, 67, 54, 'still', 1, -3],
+      [2420, 67, 54, 'still'], [3670, 67, 54, 'still'],
+      [4140, 67, 59, 'still', 1, -5],
+    ] },
+    { name: 'upper-jaw', propClass: 'arcade-fossil-jaw arcade-fossil-jaw-upper', width: 39, frames: [
+      [0, 67, 43, 'still', 1, 4], [2010, 67, 43, 'still', 1, 4],
+      [2190, 67, 46, 'still'], [2250, 67, 46, 'still', 1, 3],
+      [2420, 67, 46, 'still'], [3670, 67, 46, 'still'],
+      [4140, 67, 43, 'still', 1, 4],
+    ] },
+    { name: 'coral', sprites: coral, width: 30, frames: [
+      [160, -16, 55, 'right'], [1050, 38, 55, 'idleRight'],
+      [1410, 40, 54, 'idleRight', 1, -7], [1710, 44, 53, 'idleRight'],
+      [1910, 42, 55, 'idleRight'], [2190, 29, 52, 'idleRight', 1.08, -15],
+      [2580, 32, 55, 'idleRight'], [3300, 32, 55, 'idleRight'],
+      [3670, 42, 55, 'right'], [4070, 42, 55, 'idleRight'],
+      [4460, 42, 55, 'left'], [5140, -17, 55],
+    ] },
+    { name: 'loose-tooth', propClass: 'arcade-fossil-tooth', width: 5, frames: [
+      [0, 50, 51, 'still', 1, 12], [1720, 50, 51, 'still', 1, 12],
+      [1910, 45, 51, 'still', 1, -27], [2190, 33, 49, 'still', 1, -32],
+      [2580, 36, 52, 'still', 1, -25], [3300, 36, 52, 'still', 1, -25],
+      [3670, 46, 52, 'still', 1, -20], [4030, 50, 51, 'still', 1, 12],
+    ] },
+  ],
+};
+
+const intermissions = [
+  POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP,
+  WRONG_PLATFORM, VACANCY, LOOSE_TOOTH,
+];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];
 

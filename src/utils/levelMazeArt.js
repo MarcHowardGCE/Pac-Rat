@@ -13,6 +13,8 @@ import mirageBackdrop from '../assets/maze/neon-mirage/backdrop.webp';
 import mirageWall from '../assets/maze/neon-mirage/wall.webp';
 import fossilBackdrop from '../assets/maze/fossil-switchbacks/backdrop.webp';
 import fossilWall from '../assets/maze/fossil-switchbacks/wall.webp';
+import sugarBackdrop from '../assets/maze/sugar-works/backdrop.webp';
+import sugarWall from '../assets/maze/sugar-works/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -55,6 +57,11 @@ const themes = new Map([
     id: 'fossil-switchbacks', backdrop: fossilBackdrop, material: fossilWall, rounded: false,
     floor: '#252126', wall: '#645447', ink: '#262026', edge: '#aa9677',
     den: '#473932', denRim: '#8c7461', textureAlpha: 0.7,
+  }],
+  [getMazeLayout(9), {
+    id: 'sugar-works', backdrop: sugarBackdrop, material: sugarWall, rounded: true,
+    floor: '#221722', wall: '#58384e', ink: '#241721', edge: '#ab6d75',
+    den: '#43283d', denRim: '#9a626d', textureAlpha: 0.72,
   }],
 ]);
 
@@ -107,6 +114,23 @@ function drawDen(ctx, theme) {
   ctx.fillStyle = theme.den;
   ctx.strokeStyle = theme.denRim;
   ctx.lineWidth = 2;
+  if (theme.id === 'sugar-works') {
+    const x = left + width / 2;
+    const y = top + height / 2;
+    ctx.beginPath();
+    ctx.ellipse(x, y, width / 2 - 8, height / 2 - 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(x, y, width / 2 - 19, height / 2 - 17, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 24, y + 22);
+    ctx.quadraticCurveTo(x + 10, y + 10, x + 42, y + 19);
+    ctx.stroke();
+    return;
+  }
+
   if (theme.id === 'bottlecap-gulch') {
     const centerX = left + width / 2;
     const centerY = top + height / 2;
@@ -200,7 +224,11 @@ function drawTunnelMouths(ctx, theme) {
     for (const bank of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(0, bank * (wallOffset + 12));
-      if (theme.id === 'fossil-switchbacks') {
+      if (theme.id === 'sugar-works') {
+        ctx.lineTo(10, bank * (wallOffset + 12));
+        ctx.lineTo(25, bank * (wallOffset + 2));
+        ctx.lineTo(39, bank * (wallOffset + 2));
+      } else if (theme.id === 'fossil-switchbacks') {
         ctx.quadraticCurveTo(16, bank * (wallOffset + 11), 28, bank * (wallOffset + 4));
         ctx.lineTo(39, bank * wallOffset);
       } else if (theme.id === 'neon-mirage') {
