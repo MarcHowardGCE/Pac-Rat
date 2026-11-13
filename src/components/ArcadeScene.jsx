@@ -231,7 +231,36 @@ const WRONG_PLATFORM = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP, WRONG_PLATFORM];
+const VACANCY = {
+  id: 'vacancy',
+  title: 'Vacancy (After Level 7)',
+  duration: 5300,
+  tracks: [
+    { name: 'motel-lamp', propClass: 'arcade-motel-lamp', width: 23, frames: [
+      [0, 41, 38, 'still', 1, -8],
+    ] },
+    { name: 'bubblegum', sprites: bubblegum, width: 29, frames: [
+      [0, -16, 55, 'right'], [920, 36, 55, 'right'], [1880, 39, 54, 'right', 1.06, -8],
+      [2240, 39, 54, 'right', 1.06, -8], [2330, 39, 54],
+      [2630, 39, 54, 'right', 1.06, -8], [3060, 36, 50, 'right', 1.09, -13],
+      [3420, 38, 55, 'right'], [3770, 44, 55, 'right'], [4610, 116, 55],
+    ] },
+    { name: 'candy', sprites: candy, width: 12, frames: [
+      [0, 59, 57, 'still'], [2240, 59, 57, 'still'], [2330, 59, 57],
+      [2630, 62, 55, 'still', 0.62, -17], [3110, 63, 55],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 31, frames: [
+      [2630, 70, 55, 'idleLeft'], [2820, 70, 55, 'idleLeft', 1, 6],
+      [3060, 69, 55, 'idleLeft'], [3410, 72, 55, 'idleRight'],
+      [3610, 72, 55, 'right'], [4390, 117, 55],
+    ] },
+    { name: 'lamp-shadow', propClass: 'arcade-lamp-shadow', width: 100, frames: [
+      [2330, 50, 50, 'still'], [2630, 50, 50],
+    ] },
+  ],
+};
+
+const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP, WRONG_PLATFORM, VACANCY];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];
 

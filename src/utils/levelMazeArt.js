@@ -11,6 +11,8 @@ import depotBackdrop from '../assets/maze/tin-whistle-depot/backdrop.webp';
 import depotWall from '../assets/maze/tin-whistle-depot/wall.webp';
 import mirageBackdrop from '../assets/maze/neon-mirage/backdrop.webp';
 import mirageWall from '../assets/maze/neon-mirage/wall.webp';
+import fossilBackdrop from '../assets/maze/fossil-switchbacks/backdrop.webp';
+import fossilWall from '../assets/maze/fossil-switchbacks/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -48,6 +50,11 @@ const themes = new Map([
     id: 'neon-mirage', backdrop: mirageBackdrop, material: mirageWall, rounded: false,
     floor: '#211925', wall: '#514057', ink: '#241924', edge: '#a46887',
     den: '#333144', denRim: '#748881', textureAlpha: 0.72,
+  }],
+  [getMazeLayout(8), {
+    id: 'fossil-switchbacks', backdrop: fossilBackdrop, material: fossilWall, rounded: false,
+    floor: '#252126', wall: '#645447', ink: '#262026', edge: '#aa9677',
+    den: '#473932', denRim: '#8c7461', textureAlpha: 0.7,
   }],
 ]);
 
@@ -119,6 +126,19 @@ function drawDen(ctx, theme) {
   ctx.fill();
   ctx.stroke();
 
+  if (theme.id === 'fossil-switchbacks') {
+    ctx.beginPath();
+    for (let tooth = 0; tooth < 7; tooth++) {
+      const x = left + 24 + tooth * 24;
+      const y = top + height - 18;
+      ctx.moveTo(x - 7, y);
+      ctx.lineTo(x, y - 11);
+      ctx.lineTo(x + 7, y);
+    }
+    ctx.stroke();
+    return;
+  }
+
   if (theme.id === 'neon-mirage') {
     ctx.beginPath();
     ctx.roundRect(left + 14, top + 14, width - 28, height - 28, 6);
@@ -180,7 +200,10 @@ function drawTunnelMouths(ctx, theme) {
     for (const bank of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(0, bank * (wallOffset + 12));
-      if (theme.id === 'neon-mirage') {
+      if (theme.id === 'fossil-switchbacks') {
+        ctx.quadraticCurveTo(16, bank * (wallOffset + 11), 28, bank * (wallOffset + 4));
+        ctx.lineTo(39, bank * wallOffset);
+      } else if (theme.id === 'neon-mirage') {
         ctx.lineTo(12, bank * (wallOffset + 12));
         ctx.lineTo(22, bank * (wallOffset + 3));
         ctx.lineTo(38, bank * (wallOffset + 3));
