@@ -15,6 +15,8 @@ import fossilBackdrop from '../assets/maze/fossil-switchbacks/backdrop.webp';
 import fossilWall from '../assets/maze/fossil-switchbacks/wall.webp';
 import sugarBackdrop from '../assets/maze/sugar-works/backdrop.webp';
 import sugarWall from '../assets/maze/sugar-works/wall.webp';
+import arcadeBackdrop from '../assets/maze/last-stop-arcade/backdrop.webp';
+import arcadeWall from '../assets/maze/last-stop-arcade/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -62,6 +64,11 @@ const themes = new Map([
     id: 'sugar-works', backdrop: sugarBackdrop, material: sugarWall, rounded: true,
     floor: '#221722', wall: '#58384e', ink: '#241721', edge: '#ab6d75',
     den: '#43283d', denRim: '#9a626d', textureAlpha: 0.72,
+  }],
+  [getMazeLayout(10), {
+    id: 'last-stop-arcade', backdrop: arcadeBackdrop, material: arcadeWall, rounded: false,
+    floor: '#191720', wall: '#554435', ink: '#211922', edge: '#b49a6d',
+    den: '#3a2d3b', denRim: '#a18862', textureAlpha: 0.61,
   }],
 ]);
 
@@ -114,6 +121,18 @@ function drawDen(ctx, theme) {
   ctx.fillStyle = theme.den;
   ctx.strokeStyle = theme.denRim;
   ctx.lineWidth = 2;
+  if (theme.id === 'last-stop-arcade') {
+    ctx.beginPath();
+    ctx.roundRect(left + 8, top + 11, width - 16, height - 22, 7);
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(left + 25, top + height - 25);
+    ctx.lineTo(left + width - 25, top + height - 25);
+    ctx.stroke();
+    return;
+  }
+
   if (theme.id === 'sugar-works') {
     const x = left + width / 2;
     const y = top + height / 2;
@@ -224,7 +243,10 @@ function drawTunnelMouths(ctx, theme) {
     for (const bank of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(0, bank * (wallOffset + 12));
-      if (theme.id === 'sugar-works') {
+      if (theme.id === 'last-stop-arcade') {
+        ctx.lineTo(29, bank * (wallOffset + 12));
+        ctx.lineTo(38, bank * wallOffset);
+      } else if (theme.id === 'sugar-works') {
         ctx.lineTo(10, bank * (wallOffset + 12));
         ctx.lineTo(25, bank * (wallOffset + 2));
         ctx.lineTo(39, bank * (wallOffset + 2));

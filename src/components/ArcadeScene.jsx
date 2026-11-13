@@ -13,6 +13,9 @@ import coralRight1 from '../assets/rats/coral/rat_coral_move_right_01.png?inline
 import coralRight2 from '../assets/rats/coral/rat_coral_move_right_02.png?inline';
 import coralScared from '../assets/rats/coral/rat_coral_frightened_left.png?inline';
 import bubblegumRat from '../assets/rats/bubblegum/rat_bubblegum_base.png?inline';
+import seafoamRat from '../assets/rats/seafoam/rat_seafoam_base.png?inline';
+import butterRat from '../assets/rats/butter/rat_butter_base.png?inline';
+import pelletSprite from '../assets/pickups/pellet.png?inline';
 import candySprite from '../assets/pickups/candy_01.png?inline';
 import prairieDogSprite from '../assets/pickups/prairie_dog.png?inline';
 import './ArcadeScene.css';
@@ -294,9 +297,76 @@ const LOOSE_TOOTH = {
   ],
 };
 
+const QUALITY_CONTROL = {
+  id: 'quality-control',
+  title: 'Quality Control (After Level 9)',
+  duration: 5200,
+  tracks: [
+    { name: 'candy-chute', propClass: 'arcade-candy-chute', width: 18, frames: [[0, 14, 35, 'still', 1, 15]] },
+    ...[coral, bubblegum, { right: seafoamRat }, { right: butterRat }].map((sprites, index) => {
+      const x = 24 + index * 14;
+      const time = 1740 + index * 290;
+      return { name: `inspector-${index}`, sprites, width: 18, frames: [
+        [0, x, 59, 'right'], [time, x, 59, 'right'], [time + 130, x + 2, 57, 'right', 1.09, -12],
+        [time + 400, x, 59, 'right'],
+      ] };
+    }),
+    { name: 'ferret', sprites: ferret, width: 24, frames: [
+      [0, 87, 58, 'idleLeft'], [3220, 87, 58, 'idleLeft'],
+      [3550, 86, 56, 'idleLeft', 1.07, -9], [3950, 86, 58, 'idleRight'],
+      [4230, 86, 58, 'right'], [4980, 117, 58],
+    ] },
+    { name: 'candy', sprites: candy, width: 9, frames: [
+      [1030, 17, 40, 'still'], [1520, 19, 51, 'still', 1, 180],
+      [3220, 78, 51, 'still', 1, 1120], [3550, 80, 50],
+    ] },
+  ],
+};
+
+const ONE_MORE_CREDIT = {
+  id: 'one-more-credit',
+  title: 'One More Credit (Finale)',
+  duration: 6700,
+  tracks: [
+    { name: 'arcade-cabinet', propClass: 'arcade-finale-cabinet', width: 33, frames: [[0, 50, 43, 'still']] },
+    { name: 'coin-return', propClass: 'arcade-coin-return', width: 8, frames: [
+      [0, 50, 53, 'still'], [2580, 50, 53, 'still'], [2800, 50, 55, 'still', 1.15, 8],
+      [3830, 50, 55, 'still', 1.15, 8], [4060, 50, 53, 'still'],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 25, frames: [
+      [0, -16, 59, 'right'], [1330, 32, 59, 'idleRight'],
+      [2340, 35, 59, 'idleRight', 1.04, -9], [3000, 30, 59, 'idleRight'],
+      [5840, 30, 59, 'idleRight'], [6240, 36, 61, 'idleRight', 0.9, 7],
+      [6600, 44, 61, 'right'],
+    ] },
+    { name: 'last-pellet', sprites: { still: pelletSprite }, width: 4, frames: [
+      [0, -8, 58, 'still'], [1330, 40, 58, 'still'], [1880, 40, 58, 'still'],
+      [2110, 44, 44, 'still'], [2390, 50, 45],
+    ] },
+    ...[coral, bubblegum, { right: seafoamRat }, { right: butterRat }].map((sprites, index) => {
+      const x = [80, 91, 21, 11][index];
+      const from = index < 2 ? 117 : -17;
+      const y = index % 2 === 0 ? 61 : 68;
+      const entry = 4000 + 120 * index;
+      return { name: `finale-rat-${index}`, sprites, width: 17, frames: [
+        [entry, from, y, 'right'], [entry + 790, x, y, 'right'],
+        [5510, x, y, 'right', 1.03, index < 2 ? -8 : 8],
+        [5840, x, y, 'right'], [6240, x, y, 'right', 0.9],
+        [6600, x + (index < 2 ? -12 : 12), y, 'right'],
+      ] };
+    }),
+    ...[41, 46, 50, 54, 60].map((x, index) => {
+      const drop = 2730 + index * 140;
+      return { name: `prize-${index}`, sprites: candy, width: 8, frames: [
+        [drop, 50, 54, 'still'], [drop + 430, x, 63 + index % 2 * 3, 'still', 1, (index - 2) * 54],
+      ] };
+    }),
+  ],
+};
+
 const intermissions = [
   POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP,
-  WRONG_PLATFORM, VACANCY, LOOSE_TOOTH,
+  WRONG_PLATFORM, VACANCY, LOOSE_TOOTH, QUALITY_CONTROL, ONE_MORE_CREDIT,
 ];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];

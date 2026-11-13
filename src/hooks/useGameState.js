@@ -19,7 +19,7 @@ import { readStored, writeStored } from '../utils/storage.js';
  */
 export const useGameState = () => {
   // Core game state
-  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'paused' | 'gameOver'
+  const [gameState, setGameState] = useState('start'); // 'start' | 'playing' | 'paused' | 'gameOver' | 'completed'
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(PLAYER_CONFIG.INITIAL_LIVES);
   const [level, setLevel] = useState(1);
@@ -101,8 +101,8 @@ export const useGameState = () => {
   /**
    * End the game
    */
-  const endGame = useCallback(() => {
-    setGameState('gameOver');
+  const endGame = useCallback((completed = false) => {
+    setGameState(completed ? 'completed' : 'gameOver');
     
     // Update high score if needed
     if (score > highScore) {

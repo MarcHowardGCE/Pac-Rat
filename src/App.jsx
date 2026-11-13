@@ -34,7 +34,7 @@ import {
 } from './utils/constants.js';
 import { EFFECT_STYLES } from './utils/gameplayEffects.js';
 import { mazeDistancesFrom, mazeTile } from './utils/mazeRouting.js';
-import { getMazeLayout } from './utils/mazeData.js';
+import { FINAL_LEVEL, getMazeLayout } from './utils/mazeData.js';
 import { getLevelMazeTheme } from './utils/levelMazeArt.js';
 import './App.css';
 
@@ -215,11 +215,17 @@ function App() {
   }, [resetPlayer, resetRats, setRoundCue]);
 
   const startNextRound = useCallback(() => {
+    if (level === FINAL_LEVEL) {
+      roundEndedRef.current = true;
+      setRoundCue(null);
+      endGame(true);
+      return;
+    }
     nextLevel();
     setCandies([]);
     candyTimerRef.current = 0;
     resetActorsForReady();
-  }, [nextLevel, resetActorsForReady, setCandies]);
+  }, [endGame, level, nextLevel, resetActorsForReady, setCandies, setRoundCue]);
 
   const finishScene = useCallback(() => {
     const cue = roundCueRef.current;
@@ -449,7 +455,7 @@ function App() {
           )}
 
           {gameState === 'playing' && roundCue && !activeScene && (
-            <RoundCue key={roundCue.kind} kind={roundCue.kind} level={level} />
+            <RoundCue key={roundCue.kind} kind={roundCue.kind} level={level} finalLevel={level === FINAL_LEVEL} />
           )}
 
           {gameState === 'playing' && activeScene && !reducedMotion && (
@@ -477,12 +483,14 @@ function App() {
             />
           )}
 
-          {gameState === 'gameOver' && (
+          {(gameState === 'gameOver' || gameState === 'completed') && (
             <GameOverScreen
               score={score}
               highScore={highScore}
               level={level}
               onRestart={handleStartGame}
+              onTitle={handleReturnToTitle}
+              completed={gameState === 'completed'}
             />
           )}
         </div>
