@@ -9,6 +9,8 @@ import gulchBackdrop from '../assets/maze/bottlecap-gulch/backdrop.webp';
 import gulchWall from '../assets/maze/bottlecap-gulch/wall.webp';
 import depotBackdrop from '../assets/maze/tin-whistle-depot/backdrop.webp';
 import depotWall from '../assets/maze/tin-whistle-depot/wall.webp';
+import mirageBackdrop from '../assets/maze/neon-mirage/backdrop.webp';
+import mirageWall from '../assets/maze/neon-mirage/wall.webp';
 import { GRID_HEIGHT, GRID_WIDTH, RAT_BASE, TILE_SIZE, TUNNEL_ROW } from './constants.js';
 import { loadSpriteFrame } from './directionalSprites.js';
 import { getMazeLayout } from './mazeData.js';
@@ -41,6 +43,11 @@ const themes = new Map([
     id: 'tin-whistle-depot', backdrop: depotBackdrop, material: depotWall, rounded: false,
     floor: '#211d2a', wall: '#464a51', ink: '#1c1923', edge: '#989487',
     den: '#39313a', denRim: '#777168', textureAlpha: 0.74,
+  }],
+  [getMazeLayout(7), {
+    id: 'neon-mirage', backdrop: mirageBackdrop, material: mirageWall, rounded: false,
+    floor: '#211925', wall: '#514057', ink: '#241924', edge: '#a46887',
+    den: '#333144', denRim: '#748881', textureAlpha: 0.72,
   }],
 ]);
 
@@ -112,6 +119,19 @@ function drawDen(ctx, theme) {
   ctx.fill();
   ctx.stroke();
 
+  if (theme.id === 'neon-mirage') {
+    ctx.beginPath();
+    ctx.roundRect(left + 14, top + 14, width - 28, height - 28, 6);
+    ctx.stroke();
+    ctx.beginPath();
+    for (const offset of [23, 31, 39]) {
+      ctx.moveTo(left + width - 42, top + offset);
+      ctx.lineTo(left + width - 16, top + offset);
+    }
+    ctx.stroke();
+    return;
+  }
+
   if (theme.id === 'tin-whistle-depot') {
     ctx.beginPath();
     for (const offset of [14, 23]) {
@@ -160,7 +180,11 @@ function drawTunnelMouths(ctx, theme) {
     for (const bank of [-1, 1]) {
       ctx.beginPath();
       ctx.moveTo(0, bank * (wallOffset + 12));
-      if (theme.id === 'tin-whistle-depot') {
+      if (theme.id === 'neon-mirage') {
+        ctx.lineTo(12, bank * (wallOffset + 12));
+        ctx.lineTo(22, bank * (wallOffset + 3));
+        ctx.lineTo(38, bank * (wallOffset + 3));
+      } else if (theme.id === 'tin-whistle-depot') {
         ctx.lineTo(24, bank * (wallOffset + 12));
         ctx.lineTo(24, bank * wallOffset);
         ctx.lineTo(39, bank * wallOffset);

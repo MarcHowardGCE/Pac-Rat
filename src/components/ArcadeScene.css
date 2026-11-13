@@ -75,6 +75,31 @@
   background: #b17b59;
 }
 
+.arcade-clock-hook {
+  aspect-ratio: 1.4;
+  border-top: 3px solid #a29079;
+  border-right: 3px solid #a29079;
+  border-radius: 0 45% 0 0;
+}
+
+.arcade-station-clock {
+  aspect-ratio: 1;
+  border: 3px solid #73615b;
+  border-radius: 47% 51% 46% 53%;
+  background: #d6c5a1;
+  box-shadow: 0 0 0 2px #2b202a, inset 0 0 0 2px #aa987b;
+}
+
+.arcade-station-clock::after {
+  position: absolute;
+  inset: 22% 24% 50% 47%;
+  content: "";
+  border-left: 2px solid #4a3640;
+  border-bottom: 2px solid #4a3640;
+  transform: rotate(-16deg);
+  transform-origin: bottom left;
+}
+
 .arcade-scene-skip {
   position: relative;
   margin: 0;

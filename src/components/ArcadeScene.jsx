@@ -200,7 +200,38 @@ const CAP_TRAP = {
   ],
 };
 
-const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP];
+const WRONG_PLATFORM = {
+  id: 'wrong-platform',
+  title: 'Wrong Platform (After Level 6)',
+  duration: 5400,
+  tracks: [
+    { name: 'clock-hook', propClass: 'arcade-clock-hook', width: 4, frames: [
+      [0, 32, 39, 'still'],
+    ] },
+    { name: 'coral', sprites: coral, width: 29, frames: [
+      [0, -15, 55, 'right'], [960, 31, 55, 'idleRight'],
+      [2970, 31, 55, 'idleRight'], [3200, 29, 54, 'idleRight', 1, -9],
+      [3650, 31, 55, 'idleRight'], [4070, 31, 52, 'idleRight', 1, -22],
+      [5070, 31, 52, 'idleRight', 1, -22],
+    ] },
+    { name: 'station-clock', propClass: 'arcade-station-clock', width: 12, frames: [
+      [0, 32, 43, 'still', 1, -8], [2460, 32, 43, 'still', 1, -8],
+      [2650, 32, 40, 'still', 1, -18], [2920, 40, 55, 'still', 1, 16],
+      [3170, 49, 49, 'still', 1, -16], [3410, 59, 55, 'still', 1, 12],
+      [3650, 68, 49, 'still', 1, -16], [3890, 78, 55, 'still', 1, 12],
+      [4130, 88, 49, 'still', 1, -16], [4370, 98, 55, 'still', 1, 12],
+      [4760, 115, 55],
+    ] },
+    { name: 'ferret', sprites: ferret, width: 31, frames: [
+      [1410, -16, 57, 'right'], [1750, 3, 57, 'right'], [3480, 115, 57],
+    ] },
+    { name: 'candy', sprites: candy, width: 9, frames: [
+      [1410, -7, 57, 'still'], [1750, 12, 57, 'still'], [3480, 124, 57],
+    ] },
+  ],
+};
+
+const intermissions = [POWER_BLUFF, CANDY_TUG, SALTY_SNACK, CACTUS_HITCHHIKER, CAP_TRAP, WRONG_PLATFORM];
 export const ARCADE_SCENES = [OPENING_SCENE, ...intermissions];
 export const intermissionAfter = (level) => intermissions[level - 1];
 
